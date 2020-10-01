@@ -8,22 +8,17 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER(11),
         allowNull: false,
         primaryKey: true,
-        autoIncrement: true,
-      },
-      role: {
-        type: DataTypes.STRING(255),
-        allowNull: false,
-      },
-      idusers: {
-        type: DataTypes.INTEGER(11),
-        allowNull: false,
-        primaryKey: true,
         references: {
           model: {
             tableName: 'users',
           },
           key: 'idusers',
         },
+      },
+
+      role: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
       },
     },
     {
@@ -35,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
   Admin.associate = (models) => {
     // associations can be defined here
     Admin.belongsTo(models.Users, {
-      foreignKey: 'idusers',
+      foreignKey: 'idadmins',
     })
   }
   return Admin

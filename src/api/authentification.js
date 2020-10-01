@@ -1,13 +1,10 @@
 const express = require('express')
 
 const router = express.Router()
-// const AuthentificationController = require('../controllers/AuthentificationController')
-// const AuthentificationControllerPolicy = require('../policies/AuthentificationControllerPolicy')
+const AuthentificationService = require('../services/AuthentificationService')
+const IsAuthenticate = require('../middleware/IsAuthenticate')
 
-router.route('/register')
-/* .post(
-    AuthentificationControllerPolicy.register,
-    AuthentificationController.register
-  ) */
+router.route('/login').post(AuthentificationService.login)
+router.route('/token').post(IsAuthenticate, AuthentificationService.token)
 
 module.exports = router

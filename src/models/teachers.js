@@ -8,7 +8,12 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER(11),
         allowNull: false,
         primaryKey: true,
-        autoIncrement: true,
+        references: {
+          model: {
+            tableName: 'users',
+          },
+          key: 'idusers',
+        },
       },
       city: {
         type: DataTypes.STRING(255),
@@ -36,7 +41,7 @@ module.exports = (sequelize, DataTypes) => {
   Teacher.associate = (models) => {
     // associations can be defined here
     Teacher.belongsTo(models.Users, {
-      foreignKey: 'idusers',
+      foreignKey: 'idteachers',
     })
     Teacher.belongsTo(models.Subjects, {
       foreignKey: 'idsubjects',
@@ -48,7 +53,7 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'idteachers',
       otherKey: 'idusers',
     })
-    Teacher.belongsTo(models.Problems, {
+    Teacher.hasMany(models.Problems, {
       foreignKey: 'idteachers',
     })
   }

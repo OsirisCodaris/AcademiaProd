@@ -21,7 +21,6 @@ module.exports = (sequelize, DataTypes) => {
       idstudents: {
         type: DataTypes.INTEGER(11),
         allowNull: false,
-        primaryKey: true,
         references: {
           model: {
             tableName: 'students',

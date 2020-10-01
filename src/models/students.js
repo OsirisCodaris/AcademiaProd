@@ -8,7 +8,12 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER(11),
         allowNull: false,
         primaryKey: true,
-        autoIncrement: true,
+        references: {
+          model: {
+            tableName: 'users',
+          },
+          key: 'idusers',
+        },
       },
     },
     {
@@ -20,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
   Student.associate = (models) => {
     // associations can be defined here
     Student.belongsTo(models.Users, {
-      foreignKey: 'idusers',
+      foreignKey: 'idstudents',
     })
     Student.belongsTo(models.Classes, {
       foreignKey: 'idclasses',

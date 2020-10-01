@@ -10,6 +10,7 @@ app.use(morgan('combined'))
 app.use(bodyParser.json())
 app.use(cors())
 
+require('./config/passport')
 require('./api/v1')(app)
 
 const port = process.env.APP_PORT || 8080
