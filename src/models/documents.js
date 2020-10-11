@@ -1,4 +1,5 @@
 /* jshint indent: 2 */
+const config = require('../config/config')
 
 module.exports = (sequelize, DataTypes) => {
   const Doc = sequelize.define(
@@ -21,9 +22,13 @@ module.exports = (sequelize, DataTypes) => {
       pathfile: {
         type: DataTypes.STRING(255),
         allowNull: false,
+        unique: true,
+        get() {
+          return `${config.URL_READ_DOC}/${this.getDataValue('pathfile')}`
+        },
       },
       status: {
-        type: DataTypes.INTEGER(1),
+        type: DataTypes.BOOLEAN,
         allowNull: true,
       },
       idtypedocs: {
@@ -56,6 +61,12 @@ module.exports = (sequelize, DataTypes) => {
       as: 'userViews',
       foreignKey: 'iddocuments',
       otherKey: 'idusers',
+    })
+    Doc.belongsToMany(models.subjectsHasClasses, {
+      through: 'docHasSubjectsHasClasses',
+      as: 'docInSubjectClasses',
+      foreignKey: 'iddocuments',
+      otherKey: 'idsubjectshasclasses',
     })
   }
   return Doc

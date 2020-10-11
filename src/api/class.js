@@ -7,7 +7,7 @@ const NamePolicy = require('../policies/NamePolicy')
 router.route('/classes').post(NamePolicy, ClasseService.create)
 
 router
-  .route('/classes/:id')
+  .route('/classes/:id([0-9]+)')
   .put(NamePolicy, ClasseService.update)
   .delete(ClasseService.delete)
 

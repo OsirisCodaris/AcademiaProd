@@ -1,28 +1,14 @@
 /* jshint indent: 2 */
 
 module.exports = (sequelize, DataTypes) => {
-  return sequelize.define(
+  const subjectsHasClasses = sequelize.define(
     'subjectsHasClasses',
     {
-      idsubjects: {
+      idsubjectshasclasses: {
         type: DataTypes.INTEGER(11),
         allowNull: false,
-        references: {
-          model: {
-            tableName: 'subjects',
-          },
-          key: 'idsubjects',
-        },
-      },
-      idclasses: {
-        type: DataTypes.INTEGER(11),
-        allowNull: false,
-        references: {
-          model: {
-            tableName: 'classes',
-          },
-          key: 'idclasses',
-        },
+        primaryKey: true,
+        autoIncrement: true,
       },
     },
     {
@@ -31,4 +17,14 @@ module.exports = (sequelize, DataTypes) => {
       timestamps: false,
     }
   )
+  subjectsHasClasses.associate = (models) => {
+    subjectsHasClasses.belongsToMany(models.Documents, {
+      through: 'docHasSubjectsHasClasses',
+      as: 'docInSubjectClasses',
+      foreignKey: 'idsubjectshasclasses',
+      otherKey: 'iddocuments',
+    })
+  }
+
+  return subjectsHasClasses
 }

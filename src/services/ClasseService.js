@@ -67,4 +67,27 @@ module.exports = {
         .send({ error: "Une erreur s'est produite", status: 500 })
     }
   },
+  async showSubjects(req, res) {
+    try {
+      const idclasses = parseInt(req.params.idclasses, 10)
+      const classe = await Classes.findByPk(idclasses)
+      if (!classe) {
+        return res.status(400).send({
+          error: "la classe n'existe pas ou a été supprimé",
+          status: 400,
+        })
+      }
+
+      const subjectHasClasses = await classe.getSubjects()
+      const count = await classe.countSubjects()
+      return res.status(201).send({
+        count,
+        subjectHasClasses,
+      })
+    } catch (errors) {
+      return res
+        .status(400)
+        .send({ error: `Une erreur s'est produite`, status: 400 })
+    }
+  },
 }
