@@ -1,0 +1,80 @@
+const { subjectsHasClasses } = require('../models')
+
+module.exports = {
+  async associate(req, res) {
+    try {
+      const idsubjects = parseInt(req.body.idsubjects, 10)
+      const { doc } = req
+      const classesID = req.body.idclasses
+      const errors = []
+      // si on modifie les association d'une classe avec des matières on réinitialise
+      await doc.setDocInSubjectClasses(null)
+      // On parcours le tableau reçu et on ajoute les association entre les matiere et les classe
+      for (const idclasses of classesID) {
+        const subjecthasclass = await subjectsHasClasses.findOne({
+          where: {
+            idclasses,
+            idsubjects,
+          },
+        })
+        if (!subjecthasclass) {
+          errors.push(idclasses)
+        }
+        await doc.addDocInSubjectClasses(subjecthasclass)
+      }
+      // On renvoie le statut crée et la liste des erreurs rencontre (les matières ui n'existe pas)
+      return res.status(201).send({
+        iddocuments: doc.iddocuments,
+        ClassError: errors,
+      })
+    } catch (error) {
+      if (req.docAnswer) {
+        req.docAnswer.destroy()
+      }
+      if (req.doc) {
+        req.doc.destroy()
+      }
+
+      return res.status(500).send({
+        error: `Une erreur s'est produite sur le serveur`,
+        status: 500,
+      })
+    }
+  },
+  async showByClasseSubject(req, res) {
+    try {
+      const idtypedocs = parseInt(req.query.typedocs, 10)
+      const { idclasses, idsubjects } = req.params
+      const subjecthasclass = await subjectsHasClasses.findOne({
+        where: {
+          idclasses,
+          idsubjects,
+        },
+      })
+      if (!subjecthasclass) {
+        return res
+          .status(404)
+          .send({ error: 'Aucun document trouvé', status: 404 })
+      }
+      if (idtypedocs) {
+        const docInClasseSubject = await subjecthasclass.getDocInSubjectClasses(
+          {
+            where: { idtypedocs },
+          }
+        )
+        const count = await subjecthasclass.countDocInSubjectClasses({
+          where: { idtypedocs },
+        })
+        return res.status(200).send({ count, docInClasseSubject })
+      }
+      const docInClasseSubject = await subjecthasclass.getDocInSubjectClasses()
+      const count = await subjecthasclass.countDocInSubjectClasses()
+      return res.status(200).send({ count, docInClasseSubject })
+    } catch (error) {
+      return res.status(500).send({
+        error: `Une erreur s'est produite sur le serveur`,
+        status: 500,
+      })
+    }
+  },
+}
