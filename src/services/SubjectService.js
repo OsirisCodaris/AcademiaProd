@@ -11,7 +11,8 @@ module.exports = {
       })
       if (subjectVerif) {
         return res.status(400).send({
-          message: 'La matière existe déja!',
+          error: 'La matière existe déja!',
+          status: 400,
         })
       }
       const subject = await Subjects.create({
@@ -28,7 +29,6 @@ module.exports = {
   },
   async delete(req, res) {
     try {
-      console.log(req.params)
       const id = parseInt(req.params.id, 10)
       const subjectVerif = await Subjects.findOne({
         where: {
@@ -36,8 +36,9 @@ module.exports = {
         },
       })
       if (!subjectVerif) {
-        return res.status(400).send({
-          message: "La matière n'existe pas ou a été supprimé!",
+        return res.status(404).send({
+          error: "La matière n'existe pas ou a été supprimé!",
+          status: 404,
         })
       }
       await subjectVerif.destroy()
@@ -53,18 +54,25 @@ module.exports = {
       const id = parseInt(req.params.id, 10)
       const subject = await Subjects.findByPk(id)
       if (!subject) {
-        return res.status(400).send({
+        return res.status(404).send({
           error: "la matière n'existe pas ou a été supprimé",
-          status: 400,
+          status: 404,
         })
       }
       const { name } = req.body
+      const nameVerif = await Subjects.findOne({ where: { name } })
+      if (nameVerif && nameVerif.name !== subject.name) {
+        return res.status(400).send({
+          error: 'Ce nom est déja attribué à une matière',
+          status: 400,
+        })
+      }
       await subject.update({ name })
       return res.status(200).send({ idsubjects: subject.idsubjects })
     } catch (error) {
       return res
         .status(500)
-        .send({ error: `Une erreur s'est produite`, status: 500 })
+        .send({ error: `Une erreur s'est produite ${error}`, status: 500 })
     }
   },
 }

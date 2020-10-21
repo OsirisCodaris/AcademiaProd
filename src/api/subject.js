@@ -9,7 +9,7 @@ const NamePolicy = require('../policies/NamePolicy')
 router.route('/subjects').post(NamePolicy, SubjectService.create)
 
 router
-  .route('/subjects/:id')
+  .route('/subjects/:id([0-9]+)')
   .put(NamePolicy, SubjectService.update)
   .delete(SubjectService.delete)
 router

@@ -11,7 +11,8 @@ module.exports = {
       })
       if (classeVerif) {
         return res.status(400).send({
-          message: 'La classe existe déja!',
+          error: 'La classe existe déja!',
+          status: 400,
         })
       }
       const classe = await Classes.create({
@@ -36,8 +37,9 @@ module.exports = {
         },
       })
       if (!classeVerif) {
-        return res.status(400).send({
-          message: "La classe n'existe pas ou a été supprimé!",
+        return res.status(404).send({
+          error: "La classe n'existe pas ou a été supprimé!",
+          status: 404,
         })
       }
       await classeVerif.destroy()
@@ -53,41 +55,25 @@ module.exports = {
       const id = parseInt(req.params.id, 10)
       const classe = await Classes.findByPk(id)
       if (!classe) {
-        return res.status(400).send({
+        return res.status(404).send({
           error: "la classe n'existe pas ou a été supprimé",
-          status: 400,
+          status: 404,
         })
       }
       const { name } = req.body
+      const nameVerif = await Classes.findOne({ where: { name } })
+      if (nameVerif && nameVerif.name !== classe.name) {
+        return res.status(400).send({
+          error: 'Ce nom est déja attribué à une matière',
+          status: 400,
+        })
+      }
       await classe.update({ name })
       return res.status(200).send({ idclasses: classe.idclasses })
     } catch (error) {
       return res
         .status(500)
         .send({ error: "Une erreur s'est produite", status: 500 })
-    }
-  },
-  async showSubjects(req, res) {
-    try {
-      const idclasses = parseInt(req.params.idclasses, 10)
-      const classe = await Classes.findByPk(idclasses)
-      if (!classe) {
-        return res.status(400).send({
-          error: "la classe n'existe pas ou a été supprimé",
-          status: 400,
-        })
-      }
-
-      const subjectHasClasses = await classe.getSubjects()
-      const count = await classe.countSubjects()
-      return res.status(201).send({
-        count,
-        subjectHasClasses,
-      })
-    } catch (errors) {
-      return res
-        .status(400)
-        .send({ error: `Une erreur s'est produite`, status: 400 })
     }
   },
 }

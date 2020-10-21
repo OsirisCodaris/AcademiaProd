@@ -74,6 +74,12 @@ module.exports = {
           },
         ],
       })
+      if (!doc) {
+        return res.status(404).send({
+          error: "le document n'existe pas ou a été supprimé",
+          status: 404,
+        })
+      }
       /* if (doc.price) {
         // on verifie si l'utilisateur a le droit de lire le document
         const { user } = req
@@ -106,9 +112,7 @@ module.exports = {
         })
       }
       const doc = await Documents.update(req.body, {
-        where: {
-          iddocuments: req.params.id,
-        },
+        where: { iddocuments: req.params.id },
       })
       console.log(doc)
 

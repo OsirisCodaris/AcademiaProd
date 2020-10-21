@@ -53,7 +53,7 @@ module.exports = {
 
       const subjectHasClasses = await classe.getSubjects()
       const count = await classe.countSubjects()
-      return res.status(201).send({
+      return res.status(200).send({
         count,
         subjectHasClasses,
       })
