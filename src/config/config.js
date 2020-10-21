@@ -14,5 +14,6 @@ module.exports = {
   doc: {
     path: process.env.DOC_PATH || 'public/documents',
   },
-  URL_READ_DOC: 'http://192.168.1.83:8081/v1/reader',
+  URL_READ_DOC:
+    process.env.URL_READ_DOC || 'http://192.168.1.83:8081/v1/reader',
 }
