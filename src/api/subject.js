@@ -6,7 +6,10 @@ const ClasseSubjectService = require('../services/ClasseSubjectService')
 
 const NamePolicy = require('../policies/NamePolicy')
 
-router.route('/subjects').post(NamePolicy, SubjectService.create)
+router
+  .route('/subjects')
+  .post(NamePolicy, SubjectService.create)
+  .get(SubjectService.showAll)
 
 router
   .route('/subjects/:id([0-9]+)')

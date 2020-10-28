@@ -43,6 +43,7 @@ module.exports = {
   async showSubjectsInClasse(req, res) {
     try {
       const idclasses = parseInt(req.params.idclasses, 10)
+      console.log(idclasses)
       const classe = await Classes.findByPk(idclasses)
       if (!classe) {
         return res.status(404).send({

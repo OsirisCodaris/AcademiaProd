@@ -2,7 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const morgan = require('morgan')
-require('custom-env').env('developpment')
+require('custom-env').env('developpement')
 const db = require('./models')
 
 const app = express()

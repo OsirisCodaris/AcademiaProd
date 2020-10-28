@@ -27,6 +27,16 @@ module.exports = {
         .send({ error: "Une erreur s'est produite", status: 500 })
     }
   },
+  async showAll(req, res) {
+    try {
+      const classe = await Classes.findAndCountAll()
+      return res.send(classe)
+    } catch (error) {
+      return res.status(500).send({
+        error: `Une erreur s'est produite sur le serveur`,
+      })
+    }
+  },
   async delete(req, res) {
     try {
       console.log(req.params)
@@ -53,6 +63,7 @@ module.exports = {
   async update(req, res) {
     try {
       const id = parseInt(req.params.id, 10)
+      console.log(id)
       const classe = await Classes.findByPk(id)
       if (!classe) {
         return res.status(404).send({

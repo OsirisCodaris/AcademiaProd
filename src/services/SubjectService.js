@@ -27,6 +27,16 @@ module.exports = {
         .send({ error: "Une erreur s'est produite", status: 500 })
     }
   },
+  async showAll(req, res) {
+    try {
+      const subject = await Subjects.findAndCountAll()
+      return res.send(subject)
+    } catch (error) {
+      return res.status(500).send({
+        error: `Une erreur s'est produite sur le serveur`,
+      })
+    }
+  },
   async delete(req, res) {
     try {
       const id = parseInt(req.params.id, 10)
