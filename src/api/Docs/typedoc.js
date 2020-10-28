@@ -6,7 +6,7 @@ const NamePolicy = require('../../policies/NamePolicy')
 
 router
   .route('/typedocs')
-  .get(TypeService.show)
+  .get(TypeService.showAll)
   .post(NamePolicy, TypeService.create)
 
 router

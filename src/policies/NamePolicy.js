@@ -2,14 +2,14 @@ const Joi = require('joi')
 
 module.exports = (req, res, next) => {
   const schema = {
-    name: Joi.string().required(),
+    name: Joi.string().min(3).required(),
   }
   const { error } = Joi.validate(req.body, schema)
   if (error) {
     switch (error.details[0].context.key) {
       case 'name':
         res.status(400).send({
-          error: 'Le nom ne peut être vide',
+          error: 'Le nom doit contenir au moins 3 caractères',
         })
         break
       default:

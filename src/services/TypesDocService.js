@@ -27,12 +27,10 @@ module.exports = {
         .send({ error: "Une erreur s'est produite", status: 500 })
     }
   },
-  async show(req, res) {
+  async showAll(req, res) {
     try {
       const typedocs = await typeDocs.findAndCountAll()
-      return res.status(201).send({
-        typedocs,
-      })
+      return res.status(201).send(typedocs)
     } catch (errors) {
       return res
         .status(400)

@@ -24,6 +24,7 @@ module.exports = {
             .status(400)
             .send({ error: `${errorMessage} existe déja`, status: 400 })
         }
+        console.log('ici')
         await userExist.destroy()
       }
       const user = await Users.create(req.body.user)

@@ -25,7 +25,7 @@ module.exports = {
     } catch (errors) {
       return res
         .status(500)
-        .send({ error: `Une erreur s'est produite`, status: 500 })
+        .send({ error: `Une erreur s'est produite :${errors}`, status: 500 })
     }
   },
 }

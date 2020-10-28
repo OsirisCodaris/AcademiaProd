@@ -4,7 +4,10 @@ const router = express.Router()
 const ClasseService = require('../services/ClasseService')
 const NamePolicy = require('../policies/NamePolicy')
 
-router.route('/classes').post(NamePolicy, ClasseService.create)
+router
+  .route('/classes')
+  .post(NamePolicy, ClasseService.create)
+  .get(ClasseService.showAll)
 
 router
   .route('/classes/:id([0-9]+)')
