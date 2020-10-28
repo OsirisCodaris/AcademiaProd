@@ -13,10 +13,8 @@ app.use(cors())
 require('./config/passport')
 require('./api/v1')(app)
 
-const port = process.env.APP_PORT || 8080
+
 
 db.sequelize.sync().then(() => {
-  app.listen(port, () => {
-    console.log(`running at http://localhost:${port}`)
-  })
+  var server = app.listen()
 })
