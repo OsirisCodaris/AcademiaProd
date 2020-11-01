@@ -21,7 +21,13 @@ router
 router
   .route('/documents/:id([0-9]+)')
   .get(DocService.show) // voir un document spécifique
-  .put(Uploader.docUpload, DocPolicy.updated, DocService.updated)
+  .put(
+    Uploader.docUpload,
+    DocPolicy.updated,
+    DocService.updated,
+    DocAnswserService.updated,
+    DocHasSubjectHasClass.associate
+  )
   .delete(DocService.deleted)
 
 router

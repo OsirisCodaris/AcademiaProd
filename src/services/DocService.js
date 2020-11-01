@@ -1,6 +1,11 @@
 const fs = require('fs')
 const path = require('path')
-const { Documents, typeDocs, docAnswers } = require('../models')
+const {
+  Documents,
+  typeDocs,
+  docAnswers,
+  subjectsHasClasses,
+} = require('../models')
 const config = require('../config/config')
 // const sequelize = require('sequelize')
 
@@ -49,15 +54,15 @@ module.exports = {
   },
   async showAll(req, res) {
     try {
-      const offset = req.query.offset ? parseInt(req.query.offset, 10) : 0
       const docs = await Documents.findAndCountAll({
-        offset,
-        limit: 10,
+        order: [['iddocuments', 'DESC']],
+        include: [
+          {
+            model: docAnswers,
+          },
+        ],
       })
-      return res.send({
-        count: docs.count,
-        docs: docs.rows,
-      })
+      return res.send(docs)
     } catch (error) {
       return res.status(500).send({
         error: `Une erreur s'est produite sur le serveur`,
@@ -71,6 +76,10 @@ module.exports = {
         include: [
           {
             model: docAnswers,
+          },
+          {
+            model: subjectsHasClasses,
+            as: 'docInSubjectClasses',
           },
         ],
       })
@@ -98,12 +107,12 @@ module.exports = {
       return res.send({ doc })
     } catch (error) {
       return res.status(500).send({
-        error: `Une erreur s'est produite sur le serveur`,
+        error: `Une erreur s'est produite sur le serveur ${error}`,
         status: 500,
       })
     }
   },
-  async updated(req, res) {
+  async updated(req, res, next) {
     try {
       const docVerif = await Documents.findByPk(req.params.id)
       if (!docVerif) {
@@ -111,12 +120,11 @@ module.exports = {
           error: `Le document n'existe pas ou a été supprimé`,
         })
       }
-      const doc = await Documents.update(req.body, {
+      await Documents.update(req.body, {
         where: { iddocuments: req.params.id },
       })
-      console.log(doc)
-
-      return res.sendStatus(204)
+      req.doc = docVerif
+      return next()
     } catch (error) {
       return res.status(500).send({
         error: `Une erreur s'est produite`,

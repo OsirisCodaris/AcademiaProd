@@ -65,4 +65,29 @@ module.exports = {
       })
     }
   },
+  async showClassesHavSubject(req, res) {
+    try {
+      const idsubjects = parseInt(req.params.idsubjects, 10)
+      console.log(idsubjects)
+      const subject = await Subjects.findByPk(idsubjects)
+      if (!subject) {
+        return res.status(404).send({
+          error: "la subject n'existe pas ou a été supprimé",
+          status: 404,
+        })
+      }
+
+      const subjectHasClasses = await subject.getClasses()
+      const count = await subject.countClasses()
+      return res.status(200).send({
+        count,
+        subjectHasClasses,
+      })
+    } catch (errors) {
+      return res.status(500).send({
+        error: `Une erreur s'est produite sur le serveur`,
+        status: 500,
+      })
+    }
+  },
 }
