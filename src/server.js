@@ -15,7 +15,7 @@ require('./api/v1')(app)
 
 const port = process.env.APP_PORT || 8080
 
-db.sequelize.sync().then(() => {
+db.sequelize.sync({ force: true }).then(() => {
   app.listen(port, () => {
     console.log(`running at http://localhost:${port}`)
   })

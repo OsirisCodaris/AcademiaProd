@@ -16,7 +16,7 @@ module.exports = {
         switch (err.code) {
           case error.fields:
             return res.status(400).send({
-              message: 'Champs non spécifier',
+              message: 'Pas de document envoyé',
             })
           case error.fileSize:
             return res.status(400).send({

@@ -7,42 +7,42 @@ function checkError(error, res) {
   switch (error.details[0].context.key) {
     case 'name':
       res.status(400).send({
-        message: 'Le titre est obligatoire et ne pas être vide',
+        error: 'Le titre est obligatoire et ne pas être vide',
       })
       break
     case 'pathfile':
       res.status(400).send({
-        message: 'Le document ne peut être vide',
+        error: 'Le document ne peut être vide',
       })
       break
     case 'year':
       res.status(400).send({
-        message: `L'année doit être comprise entre 1900 et ${year}`,
+        error: `L'année doit être comprise entre 1900 et ${year}`,
       })
       break
     case 'status':
       res.status(400).send({
-        message: "Le status n'a pas été spécifier",
+        error: "Le status n'a pas été spécifier",
       })
       break
     case 'idtypedocs':
       res.status(400).send({
-        message: "Le type du document n'a pas été spécifier",
+        error: "Le type du document n'a pas été spécifier",
       })
       break
     case 'idclasses':
       res.status(400).send({
-        message: "La classe n'a pas été spécifier",
+        error: "La classe n'a pas été spécifier",
       })
       break
     case 'idsubjects':
       res.status(400).send({
-        message: "La matière n'a pas été spécifier",
+        error: "La matière n'a pas été spécifier",
       })
       break
     default:
       res.status(400).send({
-        message: 'Les informations que vous avez entrées sont incorrects',
+        error: 'Les informations que vous avez entrées sont incorrects',
       })
   }
 }
@@ -62,7 +62,7 @@ module.exports = {
       status: Joi.boolean(),
       answerstatus: Joi.boolean().optional(),
       idtypedocs: Joi.number().required(),
-      idclasses: Joi.array().items(Joi.number()).required(),
+      idclasses: Joi.required(),
       idsubjects: Joi.number().required(),
     }
     const { error } = Joi.validate(req.body, schema)
@@ -74,8 +74,8 @@ module.exports = {
   },
   updated(req, res, next) {
     const schema = {
-      name: Joi.string().optional(),
-      year: Joi.number().integer().min(1900).max(year).optional(),
+      name: Joi.string().required(),
+      year: Joi.number().integer().min(1900).max(year).required(),
       pathfile: Joi.string()
         .required()
         .optional()
@@ -86,9 +86,9 @@ module.exports = {
         .regex(new RegExp('([a-zA-Z0-9s_.-:])+(.pdf)$')),
       status: Joi.boolean().optional(),
       answerstatus: Joi.boolean().optional(),
-      idtypedocs: Joi.number().optional(),
-      idclasses: Joi.array().items(Joi.number()).optional(),
-      idsubjects: Joi.number().optional(),
+      idtypedocs: Joi.number().required(),
+      idclasses: Joi.required(),
+      idsubjects: Joi.number().required(),
     }
     const { error } = Joi.validate(req.body, schema)
     if (error) {

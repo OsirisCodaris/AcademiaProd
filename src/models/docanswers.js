@@ -24,8 +24,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       iddocuments: {
         type: DataTypes.INTEGER(11),
-        allowNull: false,
-        primaryKey: true,
+        allowNull: true,
         references: {
           model: {
             tableName: 'documents',

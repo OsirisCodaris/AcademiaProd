@@ -64,22 +64,30 @@ module.exports = {
       })
     }
   },
-  async updated(req, res) {
+  async updated(req, res, next) {
     try {
-      const docVerif = await docAnswers.findByPk(req.params.id)
-      if (!docVerif) {
-        return res.status(400).send({
-          error: `Le document n'existe pas ou a été supprimé`,
-        })
-      }
-      const doc = await docAnswers.update(req.body, {
+      const { answerstatus, answerfile } = req.body
+
+      const docVerif = await docAnswers.findOne({
         where: {
-          iddocuments: req.params.id,
+          iddocuments: req.doc.iddocuments,
         },
       })
-      console.log(doc)
+      if (docVerif) {
+        await docAnswers.update(req.body, {
+          where: {
+            iddocuments: req.params.id,
+          },
+        })
+      } else {
+        await docAnswers.create({
+          pathfile: answerfile,
+          status: answerstatus,
+          iddocuments: req.doc.iddocuments,
+        })
+      }
 
-      return res.sendStatus(204)
+      return next()
     } catch (error) {
       return res.status(500).send({
         error: `Une erreur s'est produite`,
