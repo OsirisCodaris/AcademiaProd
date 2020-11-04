@@ -3,6 +3,7 @@
 const authentification = require('./authentification')
 const student = require('./Users/student')
 const teacher = require('./Users/teacher')
+const admin = require('./Users/admin')
 
 const subject = require('./subject')
 const classe = require('./class')
@@ -20,4 +21,5 @@ module.exports = (app) => {
   app.use('/v1', typedocs)
   app.use('/v1', documents)
   app.use('/v1', reader)
+  app.use('/v1', admin)
 }
