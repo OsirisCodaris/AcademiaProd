@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken')
+const { Op } = require('sequelize')
 const { Users } = require('../models')
 const config = require('../config/config')
 
@@ -40,7 +41,7 @@ module.exports = {
       const { fullname, password } = req.body
       const user = await Users.findOne({
         where: {
-          fullname,
+          [Op.or]: [{ fullname }, { email: fullname }],
         },
       })
       if (!user) {
@@ -59,7 +60,7 @@ module.exports = {
       const isStudent = await user.getStudent()
       const isTeacher = await user.getTeacher()
       if (isAdmin) {
-        user.role = 'ADMIN'
+        user.role = isAdmin.role
       } else if (isStudent) {
         user.role = 'STUDENT'
       } else if (isTeacher) {
@@ -78,6 +79,15 @@ module.exports = {
       user.refreshtoken = refreshToken
       await user.save()
       return res.send({
+        idusers: user.idusers,
+        fullname: user.fullname,
+        email: user.email,
+        // eslint-disable-next-line no-nested-ternary
+        module: isStudent
+          ? isStudent.idclasses
+          : isTeacher
+          ? isTeacher.idsubjects
+          : undefined,
         role: user.role,
         token,
         refreshToken,

@@ -3,7 +3,7 @@ exports.UserRole = async (user) => {
   const isStudent = await user.getStudent()
   const isTeacher = await user.getTeacher()
   if (isAdmin) {
-    return 'ADMIN'
+    return isAdmin.role
   }
   if (isStudent) {
     return 'STUDENT'

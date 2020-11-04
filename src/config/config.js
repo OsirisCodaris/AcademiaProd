@@ -1,4 +1,5 @@
 module.exports = {
+  admin: ['CODARIS', 'ACADEMIA'],
   db: {
     database: process.env.DB_NAME,
     username: process.env.DB_USER,
