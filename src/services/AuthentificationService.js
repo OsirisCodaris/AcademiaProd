@@ -11,17 +11,23 @@ function jwtSignUser(user, expires) {
 module.exports = {
   async token(req, res) {
     try {
-      const currentUser = req.user
-      if (req.body.token === currentUser.refreshtoken) {
+      jwt.verify(req.body.refresh_token, config.JWT_SECRET)
+
+      const currentUser = await Users.findOne({
+        where: {
+          refreshtoken: req.body.refresh_token,
+        },
+      })
+      if (currentUser) {
         const userJson = {
           idusers: currentUser.idusers,
           fullname: currentUser.fullname,
           role: currentUser.role,
         }
         const refreshToken = jwtSignUser(userJson, config.JWT_REFRESH)
-        currentUser.refreshtoken = refreshToken
-        await currentUser.save()
-        return res.send({
+        // currentUser.refreshtoken = refreshToken
+        await currentUser.update({ refreshtoken: refreshToken })
+        return res.status(201).send({
           token: jwtSignUser(userJson, config.JWT_TOKEN),
           refreshToken,
         })
@@ -31,7 +37,7 @@ module.exports = {
         status: 401,
       })
     } catch (err) {
-      return res.status(500).send({
+      return res.status(401).send({
         error: `Une s'est produite sur le serveur !${err}`,
       })
     }

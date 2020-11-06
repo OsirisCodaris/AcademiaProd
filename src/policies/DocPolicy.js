@@ -64,6 +64,7 @@ module.exports = {
       idtypedocs: Joi.number().required(),
       idclasses: Joi.required(),
       idsubjects: Joi.number().required(),
+      notions: Joi.string().optional(),
     }
     const { error } = Joi.validate(req.body, schema)
     if (error) {
@@ -89,6 +90,7 @@ module.exports = {
       idtypedocs: Joi.number().required(),
       idclasses: Joi.required(),
       idsubjects: Joi.number().required(),
+      notions: Joi.string().optional(),
     }
     const { error } = Joi.validate(req.body, schema)
     if (error) {

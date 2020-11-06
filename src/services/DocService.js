@@ -4,6 +4,7 @@ const {
   Documents,
   typeDocs,
   docAnswers,
+  Notions,
   subjectsHasClasses,
 } = require('../models')
 const config = require('../config/config')
@@ -60,6 +61,9 @@ module.exports = {
           {
             model: docAnswers,
           },
+          {
+            model: Notions,
+          },
         ],
       })
       return res.send(docs)
@@ -80,6 +84,9 @@ module.exports = {
           {
             model: subjectsHasClasses,
             as: 'docInSubjectClasses',
+          },
+          {
+            model: Notions,
           },
         ],
       })

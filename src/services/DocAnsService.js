@@ -70,27 +70,26 @@ module.exports = {
 
       const docVerif = await docAnswers.findOne({
         where: {
-          iddocuments: req.doc.iddocuments,
+          iddocuments: req.params.id,
         },
       })
       if (docVerif) {
-        await docAnswers.update(req.body, {
-          where: {
-            iddocuments: req.params.id,
-          },
+        await docVerif.update({
+          pathfile: answerfile,
+          status: answerstatus,
         })
-      } else {
+      } else if (answerfile) {
         await docAnswers.create({
           pathfile: answerfile,
           status: answerstatus,
-          iddocuments: req.doc.iddocuments,
+          iddocuments: req.params.id,
         })
       }
 
       return next()
     } catch (error) {
       return res.status(500).send({
-        error: `Une erreur s'est produite`,
+        error: `Une erreur s'est produite${error}`,
       })
     }
   },

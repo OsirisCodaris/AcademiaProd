@@ -1,6 +1,5 @@
 node_modules
-.env.developpement
+.env.developpment
 public/documents/
 tmp
 .htaccess
-src/server.js

@@ -12,6 +12,8 @@ const typedocs = require('./Docs/typedoc')
 const documents = require('./Docs/document')
 const reader = require('./Docs/reader')
 
+const stats = require('./Stats/stats')
+
 module.exports = (app) => {
   app.use('/v1', authentification)
   app.use('/v1', student)
@@ -22,4 +24,5 @@ module.exports = (app) => {
   app.use('/v1', documents)
   app.use('/v1', reader)
   app.use('/v1', admin)
+  app.use('/v1', stats)
 }

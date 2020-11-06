@@ -11,7 +11,7 @@ module.exports = {
   },
   JWT_SECRET: process.env.JWT_SECRET || 'Wq9Ss6#z3%',
   JWT_TOKEN: process.env.JWT_TOKEN || 60 * 30,
-  JWT_REFRESH: process.env.JWT_REFRESH || 60 * 60 * 24 * 30,
+  JWT_REFRESH: process.env.JWT_REFRESH || 60 * 60 * 2,
   doc: {
     path: process.env.DOC_PATH || 'public/documents',
   },

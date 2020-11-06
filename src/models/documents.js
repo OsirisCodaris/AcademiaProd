@@ -53,6 +53,9 @@ module.exports = (sequelize, DataTypes) => {
     Doc.hasOne(models.docAnswers, {
       foreignKey: 'iddocuments',
     })
+    Doc.hasOne(models.Notions, {
+      foreignKey: 'iddocuments',
+    })
     Doc.belongsTo(models.typeDocs, {
       foreignKey: 'idtypedocs',
     })

@@ -1,4 +1,4 @@
-const { subjectsHasClasses, docAnswers } = require('../models')
+const { subjectsHasClasses, docAnswers, Notions } = require('../models')
 
 module.exports = {
   async associate(req, res) {
@@ -77,6 +77,9 @@ module.exports = {
             include: [
               {
                 model: docAnswers,
+              },
+              {
+                model: Notions,
               },
             ],
           }

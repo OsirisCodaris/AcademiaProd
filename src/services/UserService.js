@@ -37,4 +37,24 @@ module.exports = {
       })
     }
   },
+  async updated(req, res, next) {
+    try {
+      const userExist = await Users.findByPk(req.params.id)
+      if (!userExist) {
+        // si une instance de cet utilisateur existe déja on renvoie une erreur
+        return res.status(404).send({
+          error: `Cet utilisateur  n'existe pas ou a été supprimé`,
+          status: 404,
+        })
+      }
+      userExist.update(req.body.user)
+      req.user = userExist
+      return next()
+    } catch (err) {
+      return res.status(500).send({
+        error: `Une s'est produite sur le serveur !${err}`,
+        status: 500,
+      })
+    }
+  },
 }
