@@ -1,0 +1,11 @@
+{"message":"400- Catégories: exite déja - /v1/typedocs - POST - ::ffff:127.0.0.1 -  {\"name\":\"ENGORO NGBWA\",\"email\":\"b.engorongbwa@academiagabon.ga\",\"role\":\"CODARIS\"}","level":"warn"}
+{"message":"400- Utilisateur: Le nom ne peut être vide et doit contenir au moins 3 caractères - /v1/students - POST - ::1 -  guest","level":"warn"}
+{"message":"400- Utilisateur: Vous avez entrez une adresse mail non valide - /v1/students - POST - ::1 -  guest","level":"warn"}
+{"message":"400- Utilisateur: Vous avez entrez une adresse mail non valide: Le numéro de téléphone  est incorrect - /v1/students - POST - ::1 -  guest","level":"warn"}
+{"message":"400- Utilisateur: Vous avez entrez une adresse mail non valide: Le numéro de téléphone  est incorrect: Le numéro de téléphone  est incorrect - /v1/students - POST - ::1 -  guest","level":"warn"}
+{"message":"400- Utilisateur: Le numéro de téléphone  est incorrect - /v1/students - POST - ::1 -  guest","level":"warn"}
+{"message":"400- Utilisateur: Le numéro de téléphone  est incorrect: Le mot de passe doit contenir entre 8 et 32 caratères - /v1/students - POST - ::1 -  guest","level":"warn"}
+{"message":"400- Utilisateur: Le mot de passe doit contenir entre 8 et 32 caratères - /v1/students - POST - ::1 -  guest","level":"warn"}
+{"message":"400- Utilisateur: Le mot de passe doit contenir entre 8 et 32 caratères - /v1/students - POST - ::1 -  guest","level":"warn"}
+{"message":"400- Utilisateur: Le mot de passe doit contenir entre 8 et 32 caratères - /v1/students - POST - ::1 -  guest","level":"warn"}
+{"message":"400- Utilisateur: Le mot de passe doit contenir entre 8 et 32 caratères - /v1/students - POST - ::1 -  guest","level":"warn"}

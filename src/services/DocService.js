@@ -9,6 +9,8 @@ const {
 } = require('../models')
 const config = require('../config/config')
 // const sequelize = require('sequelize')
+const RequestError = require('../config/RequestError')
+const ServerError = require('../config/ServerError')
 
 module.exports = {
   async created(req, res, next) {
@@ -26,10 +28,9 @@ module.exports = {
             /* do something */
           }
         })
-        return res.status(400).send({
-          error: 'le type du document est invalide!',
-          status: 400,
-        })
+        const error = new RequestError('Catégories')
+        error.notExistOrDelete()
+        throw error
       }
       if (docVerif) {
         // suppression des fichier transfererdans le serveur au cas ou la création n'aboutit pas
@@ -38,22 +39,21 @@ module.exports = {
             /* do something */
           }
         })
-        return res.status(400).send({
-          error: 'Un document a déja le même nom!',
-          status: 400,
-        })
+        const error = new RequestError('Nom')
+        error.Exist()
+        throw error
       }
       const doc = await Documents.create(req.body)
       req.doc = doc
       return next()
-    } catch (error) {
-      return res.status(500).send({
-        error: `Une erreur s'est produite`,
-        status: 500,
-      })
+    } catch (errors) {
+      if (errors instanceof RequestError) {
+        return next(errors)
+      }
+      return next(new ServerError(errors))
     }
   },
-  async showAll(req, res) {
+  async showAll(req, res, next) {
     try {
       const docs = await Documents.findAndCountAll({
         order: [['iddocuments', 'DESC']],
@@ -67,14 +67,12 @@ module.exports = {
         ],
       })
       return res.send(docs)
-    } catch (error) {
-      return res.status(500).send({
-        error: `Une erreur s'est produite sur le serveur`,
-      })
+    } catch (errors) {
+      return next(new ServerError(errors))
     }
   },
 
-  async show(req, res) {
+  async show(req, res, next) {
     try {
       const doc = await Documents.findByPk(req.params.id, {
         include: [
@@ -91,10 +89,9 @@ module.exports = {
         ],
       })
       if (!doc) {
-        return res.status(404).send({
-          error: "le document n'existe pas ou a été supprimé",
-          status: 404,
-        })
+        const error = new RequestError('Document')
+        error.notExistOrDelete()
+        throw error
       }
       /* if (doc.price) {
         // on verifie si l'utilisateur a le droit de lire le document
@@ -112,33 +109,34 @@ module.exports = {
         await doc.addDocumentsRead(user)
       } */
       return res.send({ doc })
-    } catch (error) {
-      return res.status(500).send({
-        error: `Une erreur s'est produite sur le serveur ${error}`,
-        status: 500,
-      })
+    } catch (errors) {
+      if (errors instanceof RequestError) {
+        return next(errors)
+      }
+      return next(new ServerError(errors))
     }
   },
   async updated(req, res, next) {
     try {
       const docVerif = await Documents.findByPk(req.params.id)
       if (!docVerif) {
-        return res.status(400).send({
-          error: `Le document n'existe pas ou a été supprimé`,
-        })
+        const error = new RequestError('Document')
+        error.notExistOrDelete()
+        throw error
       }
       await Documents.update(req.body, {
         where: { iddocuments: req.params.id },
       })
       req.doc = docVerif
       return next()
-    } catch (error) {
-      return res.status(500).send({
-        error: `Une erreur s'est produite`,
-      })
+    } catch (errors) {
+      if (errors instanceof RequestError) {
+        return next(errors)
+      }
+      return next(new ServerError(errors))
     }
   },
-  async deleted(req, res) {
+  async deleted(req, res, next) {
     try {
       const doc = await Documents.destroy({
         where: {
@@ -148,13 +146,14 @@ module.exports = {
       if (doc) {
         return res.sendStatus(204)
       }
-      return res.status(400).send({
-        error: "Le document n'existe pas ou a été supprimé",
-      })
-    } catch (error) {
-      return res.status(500).send({
-        error: `Une erreur s'est produite${error}`,
-      })
+      const error = new RequestError('Document')
+      error.notExistOrDelete()
+      throw error
+    } catch (errors) {
+      if (errors instanceof RequestError) {
+        return next(errors)
+      }
+      return next(new ServerError(errors))
     }
   },
 }
