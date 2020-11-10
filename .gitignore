@@ -3,4 +3,4 @@ node_modules
 public/documents/
 tmp
 .htaccess
-logs/
+logs

@@ -1,4 +1,5 @@
-const { Classes, Subjects } = require('../models')
+const Sequelize = require('sequelize')
+const { Classes, Subjects, docAnswers } = require('../models')
 
 module.exports = {
   async associate(req, res) {
@@ -14,16 +15,17 @@ module.exports = {
       const { idsubjects } = req.body
       const errors = []
       if (idsubjects.length) {
-        // si on modifie les association d'une classe avec des matières on réinitialise
-        await classe.setSubjects(null)
-        // On parcours le tableau reçu et on ajoute les association entre les matiere et les classe
+        const add = []
+
         for (const element of idsubjects) {
           const subject = await Subjects.findByPk(element)
           if (!subject) {
             errors.push(element)
+          } else {
+            add.push(subject)
           }
-          await classe.addSubjects(subject)
         }
+        await classe.setSubjects(add)
         // On renvoie le statut crée et la liste des erreurs rencontre (les matières ui n'existe pas)
         return res.status(201).send({
           error: errors,
@@ -43,7 +45,6 @@ module.exports = {
   async showSubjectsInClasse(req, res) {
     try {
       const idclasses = parseInt(req.params.idclasses, 10)
-      console.log(idclasses)
       const classe = await Classes.findByPk(idclasses)
       if (!classe) {
         return res.status(404).send({
@@ -60,7 +61,7 @@ module.exports = {
       })
     } catch (errors) {
       return res.status(500).send({
-        error: `Une erreur s'est produite sur le serveur`,
+        error: `Une erreur s'est produite sur le serveur ${errors}`,
         status: 500,
       })
     }
@@ -78,6 +79,116 @@ module.exports = {
       }
 
       const subjectHasClasses = await subject.getClasses()
+      const count = await subject.countClasses()
+      return res.status(200).send({
+        count,
+        subjectHasClasses,
+      })
+    } catch (errors) {
+      return res.status(500).send({
+        error: `Une erreur s'est produite sur le serveur`,
+        status: 500,
+      })
+    }
+  },
+  // stat document et corrigé
+  async showSubjectsInClasseNstat(req, res) {
+    try {
+      const subjectHasClasses = []
+      const idclasses = parseInt(req.params.idclasses, 10)
+      const classe = await Classes.findByPk(idclasses)
+      if (!classe) {
+        return res.status(404).send({
+          error: "la classe n'existe pas ou a été supprimé",
+          status: 404,
+        })
+      }
+
+      ;(await classe.getSubjects()).forEach(async (subjectHasClasse) => {
+        const element = subjectHasClasse.toJSON()
+        const documents = await subjectHasClasse.subjectsHasClasses.getDocInSubjectClasses(
+          {
+            attributes: [
+              // on récupère le nombre de corrigé et de document
+              [
+                Sequelize.fn('COUNT', Sequelize.col('docAnswer.iddocanswers')),
+                'docAnswersCount',
+              ],
+              [
+                Sequelize.fn('COUNT', Sequelize.col('documents.iddocuments')),
+                'docCount',
+              ],
+            ],
+            include: [
+              {
+                model: docAnswers,
+                attributes: [],
+              },
+            ],
+          }
+        )
+
+        documents.forEach((doc) => {
+          element.countAnswer = doc.toJSON().docAnswersCount
+          element.countDocument = doc.toJSON().docCount
+        })
+        subjectHasClasses.push(element)
+      })
+      const count = await classe.countSubjects()
+      return res.status(200).send({
+        count,
+        subjectHasClasses,
+      })
+    } catch (errors) {
+      return res.status(500).send({
+        error: `Une erreur s'est produite sur le serveur ${errors}`,
+        status: 500,
+      })
+    }
+  },
+  async showClassesHavSubjectNstat(req, res) {
+    try {
+      const idsubjects = parseInt(req.params.idsubjects, 10)
+      console.log(idsubjects)
+      const subject = await Subjects.findByPk(idsubjects)
+      if (!subject) {
+        return res.status(404).send({
+          error: "la subject n'existe pas ou a été supprimé",
+          status: 404,
+        })
+      }
+
+      const subjectHasClasses = []
+      ;(await subject.getClasses()).forEach(async (subjectHasClasse) => {
+        const element = subjectHasClasse.toJSON()
+        const documents = await subjectHasClasse.subjectsHasClasses.getDocInSubjectClasses(
+          {
+            attributes: [
+              // on récupère le nombre de corrigé et de document
+              [
+                Sequelize.fn('COUNT', Sequelize.col('docAnswer.iddocanswers')),
+                'docAnswersCount',
+              ],
+              [
+                Sequelize.fn('COUNT', Sequelize.col('documents.iddocuments')),
+                'docCount',
+              ],
+            ],
+            include: [
+              {
+                model: docAnswers,
+                attributes: [],
+              },
+            ],
+          }
+        )
+
+        documents.forEach((doc) => {
+          element.countAnswer = doc.toJSON().docAnswersCount
+          element.countDocument = doc.toJSON().docCount
+        })
+        subjectHasClasses.push(element)
+      })
       const count = await subject.countClasses()
       return res.status(200).send({
         count,
