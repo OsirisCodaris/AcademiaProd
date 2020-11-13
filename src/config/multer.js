@@ -23,7 +23,7 @@ const upload = multer({
   fileFilter(req, file, callback) {
     const ext = path.extname(file.originalname)
     if (file.fieldname === 'pathfile' || file.fieldname === 'answerfile') {
-      if (ext !== '.pdf') {
+      if (ext !== '.pdf' && ext !== '.PDF') {
         callback(
           new Error("Seule l'extension pdf est acceptées comme document")
         )

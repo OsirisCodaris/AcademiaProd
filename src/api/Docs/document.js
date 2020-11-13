@@ -42,4 +42,10 @@ router
 router
   .route('/classes/:idclasses([0-9]+)/subjects/:idsubjects([0-9]+)/documents')
   .get(DocHasSubjectHasClass.showByClasseSubject)
+router
+  .route('/classes/:idclasses([0-9]+)/documents/random')
+  .get(DocHasSubjectHasClass.showDocRandomInClass)
+router
+  .route('/subjects/:idsubjects([0-9]+)/documents/random')
+  .get(DocHasSubjectHasClass.showDocRandomInSubject)
 module.exports = router

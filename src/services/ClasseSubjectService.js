@@ -153,7 +153,7 @@ module.exports = {
       const subject = await Subjects.findByPk(idsubjects)
       if (!subject) {
         return res.status(404).send({
-          error: "la subject n'existe pas ou a été supprimé",
+          error: "la matière n'existe pas ou a été supprimé",
           status: 404,
         })
       }

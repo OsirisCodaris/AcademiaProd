@@ -44,6 +44,7 @@ function checkError(error, res) {
       res.status(400).send({
         error: 'Les informations que vous avez entrées sont incorrects',
       })
+      break
   }
 }
 
@@ -54,11 +55,11 @@ module.exports = {
       year: Joi.number().integer().min(1900).max(year),
       pathfile: Joi.string()
         .required()
-        .regex(new RegExp('([a-zA-Z0-9s_.-:])+(.pdf)$')),
+        .regex(new RegExp('([a-zA-Z0-9s_.-:])+(.pdf)|(.PDF)$')),
       answerfile: Joi.string()
         .required()
         .optional()
-        .regex(new RegExp('([a-zA-Z0-9s_.-:])+(.pdf)$')),
+        .regex(new RegExp('([a-zA-Z0-9s_.-:])+(.pdf)|(.PDF)$')),
       status: Joi.boolean(),
       answerstatus: Joi.boolean().optional(),
       idtypedocs: Joi.number().required(),
@@ -80,11 +81,11 @@ module.exports = {
       pathfile: Joi.string()
         .required()
         .optional()
-        .regex(new RegExp('([a-zA-Z0-9s_.-:])+(.pdf)$')),
+        .regex(new RegExp('([a-zA-Z0-9s_.-:])+(.pdf)|(.PDF)$')),
       answerfile: Joi.string()
         .required()
         .optional()
-        .regex(new RegExp('([a-zA-Z0-9s_.-:])+(.pdf)$')),
+        .regex(new RegExp('([a-zA-Z0-9s_.-:])+(.pdf)|(.PDF)$')),
       status: Joi.boolean().optional(),
       answerstatus: Joi.boolean().optional(),
       idtypedocs: Joi.number().required(),

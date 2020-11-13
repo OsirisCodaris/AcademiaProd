@@ -36,8 +36,8 @@ app.use((err, req, res, next) => {
       `${err.status}- ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip} -  ${user}`
     )
   }
-
-  return res.status(400).send({
+  const status = err.status || 500
+  return res.status(status).send({
     error: err.message,
     status: err.status,
   })

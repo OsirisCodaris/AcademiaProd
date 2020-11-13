@@ -50,7 +50,7 @@ module.exports = {
     }
     const { error } = Joi.validate(req.body.user, schema)
     if (error) {
-      checkError(error, res)
+      checkError(error, res, next)
     } else {
       next()
     }

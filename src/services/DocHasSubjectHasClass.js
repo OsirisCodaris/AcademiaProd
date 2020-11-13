@@ -1,3 +1,4 @@
+const Sequelize = require('sequelize')
 const { subjectsHasClasses, docAnswers, Notions } = require('../models')
 
 module.exports = {
@@ -95,6 +96,65 @@ module.exports = {
     } catch (error) {
       return res.status(500).send({
         error: `Une erreur s'est produite sur le serveur`,
+        status: 500,
+      })
+    }
+  },
+  async showDocRandomInClass(req, res) {
+    try {
+      const { idclasses } = req.params
+      const subjecthasclasses = await subjectsHasClasses.findOne({
+        where: {
+          idclasses,
+        },
+        order: [Sequelize.literal('RAND()')],
+      })
+      if (!subjecthasclasses) {
+        return res
+          .status(404)
+          .send({ error: 'Aucun document trouvé', status: 404 })
+      }
+
+      const docInClasseSubject = await subjecthasclasses.getDocInSubjectClasses(
+        {
+          order: [Sequelize.literal('RAND()')],
+          limit: 7,
+        }
+      )
+      return res.status(200).send({ docInClasseSubject })
+    } catch (error) {
+      return res.status(500).send({
+        error: `Une erreur s'est produite sur le serveur ${error}`,
+        status: 500,
+      })
+    }
+  },
+  async showDocRandomInSubject(req, res) {
+    try {
+      const { idsubjects } = req.params
+      const subjecthasclasses = await subjectsHasClasses.findOne({
+        where: {
+          idsubjects,
+        },
+        order: [Sequelize.literal('RAND()')],
+        limit: 1,
+      })
+      if (!subjecthasclasses) {
+        return res
+          .status(404)
+          .send({ error: 'Aucun document trouvé', status: 404 })
+      }
+
+      const docInClasseSubject = await subjecthasclasses.getDocInSubjectClasses(
+        {
+          order: [Sequelize.literal('RAND()')],
+          limit: 7,
+        }
+      )
+      return res.status(200).send({ docInClasseSubject })
+    } catch (error) {
+      return res.status(500).send({
+        error: `Une erreur s'est produite sur le serveur ${error}`,
         status: 500,
       })
     }

@@ -16,22 +16,21 @@ module.exports = {
         switch (err.code) {
           case error.fields:
             return res.status(400).send({
-              message: 'Pas de document envoyé',
+              error: 'Pas de document envoyé',
             })
           case error.fileSize:
             return res.status(400).send({
-              message:
+              error:
                 'La taille du fichier est trop grande (taille autorisée < 20 MB)',
             })
           default:
             return res.status(500).send({
-              message:
-                "Une erreur s'est produite lors du transfert des fichiers",
+              error: "Une erreur s'est produite lors du transfert des fichiers",
             })
         }
       } else if (err) {
         return res.status(400).send({
-          message: err.message,
+          error: err.message,
         })
       }
       // changement des valeur des variables cover et file en nouveaux nom enregistrer

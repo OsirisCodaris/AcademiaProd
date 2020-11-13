@@ -1,3 +1,4 @@
+const { Op } = require('sequelize')
 const {
   Admins,
   Students,
@@ -17,7 +18,11 @@ module.exports = {
       const countClasses = await Classes.count()
       const countSubjects = await Subjects.count()
       const countDocuments = await Documents.count()
-      const countDocAnswers = await docAnswers.count()
+      const countDocAnswers = await docAnswers.count({
+        where: {
+          iddocuments: { [Op.not]: null },
+        },
+      })
 
       return res.status(201).send({
         countAdmins,
