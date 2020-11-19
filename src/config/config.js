@@ -15,6 +15,6 @@ module.exports = {
   doc: {
     path: process.env.DOC_PATH || 'public/documents',
   },
-  URL_READ_DOC:
-    process.env.URL_READ_DOC || 'http://academia.indoc-epm.com/v1/reader',
+  FRONT_URL: process.env.FRONT_URL || 'http://localhost:8080/#',
+  URL_READ_DOC: process.env.URL_READ_DOC || 'http://localhost:1999/v1/reader',
 }

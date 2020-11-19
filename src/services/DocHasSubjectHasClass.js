@@ -90,7 +90,16 @@ module.exports = {
         })
         return res.status(200).send({ count, docInClasseSubject })
       }
-      const docInClasseSubject = await subjecthasclass.getDocInSubjectClasses()
+      const docInClasseSubject = await subjecthasclass.getDocInSubjectClasses({
+        include: [
+          {
+            model: docAnswers,
+          },
+          {
+            model: Notions,
+          },
+        ],
+      })
       const count = await subjecthasclass.countDocInSubjectClasses()
       return res.status(200).send({ count, docInClasseSubject })
     } catch (error) {
@@ -119,6 +128,14 @@ module.exports = {
         {
           order: [Sequelize.literal('RAND()')],
           limit: 7,
+          include: [
+            {
+              model: docAnswers,
+            },
+            {
+              model: Notions,
+            },
+          ],
         }
       )
       return res.status(200).send({ docInClasseSubject })
@@ -149,6 +166,14 @@ module.exports = {
         {
           order: [Sequelize.literal('RAND()')],
           limit: 7,
+          include: [
+            {
+              model: docAnswers,
+            },
+            {
+              model: Notions,
+            },
+          ],
         }
       )
       return res.status(200).send({ docInClasseSubject })

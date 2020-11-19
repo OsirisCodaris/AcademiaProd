@@ -61,7 +61,7 @@ module.exports = {
       })
     } catch (errors) {
       return res.status(500).send({
-        error: `Une erreur s'est produite sur le serveur ${errors}`,
+        error: `Une erreur s'est produite sur le serveur`,
         status: 500,
       })
     }
@@ -103,11 +103,12 @@ module.exports = {
           status: 404,
         })
       }
-
-      ;(await classe.getSubjects()).forEach(async (subjectHasClasse) => {
+      const subjectHsClasses = await classe.getSubjects()
+      await subjectHsClasses.forEach(async (subjectHasClasse) => {
         const element = subjectHasClasse.toJSON()
-        const documents = await subjectHasClasse.subjectsHasClasses.getDocInSubjectClasses(
-          {
+        // const documents = subjectHasClasse.subjectsHasClasses
+        subjectHasClasse.subjectsHasClasses
+          .getDocInSubjectClasses({
             attributes: [
               // on récupère le nombre de corrigé et de document
               [
@@ -115,7 +116,7 @@ module.exports = {
                 'docAnswersCount',
               ],
               [
-                Sequelize.fn('COUNT', Sequelize.col('documents.iddocuments')),
+                Sequelize.fn('COUNT', Sequelize.col('Documents.iddocuments')),
                 'docCount',
               ],
             ],
@@ -125,13 +126,12 @@ module.exports = {
                 attributes: [],
               },
             ],
-          }
-        )
+          })
+          .then((doc) => {
+            element.countAnswer = doc ? doc[0].toJSON().docAnswersCount : 0
+            element.countDocument = doc ? doc[0].toJSON().docCount : 0
+          })
 
-        documents.forEach((doc) => {
-          element.countAnswer = doc.toJSON().docAnswersCount
-          element.countDocument = doc.toJSON().docCount
-        })
         subjectHasClasses.push(element)
       })
       const count = await classe.countSubjects()
@@ -161,8 +161,8 @@ module.exports = {
       const subjectHasClasses = []
       ;(await subject.getClasses()).forEach(async (subjectHasClasse) => {
         const element = subjectHasClasse.toJSON()
-        const documents = await subjectHasClasse.subjectsHasClasses.getDocInSubjectClasses(
-          {
+        subjectHasClasse.subjectsHasClasses
+          .getDocInSubjectClasses({
             attributes: [
               // on récupère le nombre de corrigé et de document
               [
@@ -170,7 +170,7 @@ module.exports = {
                 'docAnswersCount',
               ],
               [
-                Sequelize.fn('COUNT', Sequelize.col('documents.iddocuments')),
+                Sequelize.fn('COUNT', Sequelize.col('Documents.iddocuments')),
                 'docCount',
               ],
             ],
@@ -180,13 +180,11 @@ module.exports = {
                 attributes: [],
               },
             ],
-          }
-        )
-
-        documents.forEach((doc) => {
-          element.countAnswer = doc.toJSON().docAnswersCount
-          element.countDocument = doc.toJSON().docCount
-        })
+          })
+          .then((doc) => {
+            element.countAnswer = doc ? doc[0].toJSON().docAnswersCount : 0
+            element.countDocument = doc ? doc[0].toJSON().docCount : 0
+          })
         subjectHasClasses.push(element)
       })
       const count = await subject.countClasses()

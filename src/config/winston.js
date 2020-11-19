@@ -6,7 +6,7 @@ const winston = require('winston')
 const options = {
   info: {
     level: 'info',
-    filename: `${appRoot}/logs/info.log`,
+    filename: `../logs/info.log`,
     handleExceptions: true,
     json: true,
     maxsize: 5242880, // 5MB
@@ -15,7 +15,7 @@ const options = {
   },
   error: {
     level: 'error',
-    filename: `${appRoot}/logs/error.log`,
+    filename: `../logs/error.log`,
     handleExceptions: true,
     json: true,
     maxsize: 5242880, // 5MB
@@ -24,7 +24,7 @@ const options = {
   },
   warning: {
     level: 'warn',
-    filename: `${appRoot}/logs/warn.log`,
+    filename: `../logs/warn.log`,
     handleExceptions: true,
     json: true,
     maxsize: 5242880, // 5MB

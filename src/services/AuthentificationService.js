@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
 const { Op } = require('sequelize')
+const nodemailer = require('nodemailer')
 const { Users } = require('../models')
 const config = require('../config/config')
 
@@ -97,6 +98,106 @@ module.exports = {
         role: user.role,
         token,
         refreshToken,
+      })
+    } catch (err) {
+      return res.status(500).send({
+        error: `une erreur s'est produit réessayer plus tard ${err}`,
+      })
+    }
+  },
+  async resetPassword(req, res) {
+    try {
+      const userExist = await Users.findOne({
+        where: {
+          email: req.body.email,
+        },
+      })
+      if (!userExist) {
+        // si une instance de cet utilisateur existe déja on renvoie une erreur
+        return res.status(404).send({
+          error: `Cet email n'existe pas!`,
+          status: 404,
+        })
+      }
+
+      if (!userExist.refreshtoken) {
+        const userJson = {
+          idusers: userExist.idusers,
+          fullname: userExist.fullname,
+          role: userExist.role,
+        }
+        const refreshToken = jwtSignUser(userJson, config.JWT_REFRESH)
+        userExist.refreshtoken = refreshToken
+        await userExist.save()
+      }
+      const resetToken = userExist.refreshtoken
+      const transporter = nodemailer.createTransport({
+        host: 'mocha3027.mochahost.com',
+        port: 465,
+        secure: true,
+        auth: {
+          // should be replaced with real sender's account
+          user: 'administrator@academiagabon.ga',
+          pass: '@dministr@t0r',
+        },
+      })
+      const mailOptions = {
+        from: 'administrator@academiagabon.ga',
+        to: userExist.email,
+
+        subject: 'ACADEMIA GABON: Réinitialisation du mot de passe',
+        text:
+          `${
+            "Vous recevez cela parce que vous (ou quelqu'un d'autre) avez demandé la réinitialisation du mot de passe de votre compte\n" +
+            'Veuillez cliquer sur le lien suivant ou collez-le dans votre navigateur pour terminer le processus\n\n' +
+            `${config.FRONT_URL}/password/`
+          }${resetToken}  \n\n` +
+          ` Si vous ne l'avez pas demandé, veuillez ignorer cet e-mail et votre mot de passe restera inchangé`,
+      }
+      // eslint-disable-next-line no-unused-vars
+      transporter.sendMail(mailOptions, (err, info) => {
+        console.log(`Reset Password successfully. ${err}`)
+      })
+      return res.status(200).json({
+        message: `Nous vous avons envoyé un mail pour poursuivre la réinitialisation.`,
+      })
+    } catch (error) {
+      return res.status(500).send({
+        error: `une erreur s'est produit réessayer plus tard ${error}`,
+      })
+    }
+  },
+  async newPassword(req, res) {
+    try {
+      const { resetToken, password } = req.body
+      const currentUser = await Users.findOne({
+        where: {
+          refreshtoken: resetToken,
+        },
+      })
+      if (!currentUser) {
+        return res.status(404).send({
+          error: 'la clé de réinitialisation a expiré',
+        })
+      }
+      if (password.lenght < 8) {
+        return res.status(400).send({
+          error: 'Le mot de passe doit contenir au moins 8 caractères',
+        })
+      }
+      const userJson = {
+        idusers: currentUser.idusers,
+        fullname: currentUser.fullname,
+        role: currentUser.role,
+      }
+      const refreshToken = jwtSignUser(userJson, config.JWT_REFRESH)
+      // currentUser.refreshtoken = refreshToken
+      await currentUser.update({
+        refreshtoken: refreshToken,
+        password,
+      })
+      return res.status(201).send({
+        message: 'le mot de passe a été modifié',
       })
     } catch (err) {
       return res.status(500).send({
