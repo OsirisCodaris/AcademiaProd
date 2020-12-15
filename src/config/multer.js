@@ -25,7 +25,7 @@ const upload = multer({
     if (file.fieldname === 'pathfile' || file.fieldname === 'answerfile') {
       if (ext !== '.pdf' && ext !== '.PDF') {
         callback(
-          new Error("Seule l'extension pdf est acceptées comme document")
+          new Error("Seule l'extension pdf est acceptées comme documents")
         )
       } else {
         callback(null, true)

@@ -8,5 +8,11 @@ const UserPolicy = require('../../policies/UsersPolicy')
 router
   .route('/students')
   .post(UserPolicy.register, UserService.create, StudentService.create)
-
+router
+  .route('/students/:id([0-9]+)')
+  .put(
+    UserPolicy.updated,
+    UserService.updated,
+    StudentService.updated
+  )
 module.exports = router

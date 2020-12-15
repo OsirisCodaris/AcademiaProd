@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken')
 const { Op } = require('sequelize')
-const nodemailer = require('nodemailer')
 const { Users } = require('../models')
 const config = require('../config/config')
+const { Mailer } = require('../utils/Mailer')
 
 function jwtSignUser(user, expires) {
   return jwt.sign(user, config.JWT_SECRET, {
@@ -89,6 +89,7 @@ module.exports = {
         idusers: user.idusers,
         fullname: user.fullname,
         email: user.email,
+        phone: user.phone,
         // eslint-disable-next-line no-nested-ternary
         module: isStudent
           ? isStudent.idclasses
@@ -131,33 +132,10 @@ module.exports = {
         await userExist.save()
       }
       const resetToken = userExist.refreshtoken
-      const transporter = nodemailer.createTransport({
-        host: 'mocha3027.mochahost.com',
-        port: 465,
-        secure: true,
-        auth: {
-          // should be replaced with real sender's account
-          user: 'administrator@academiagabon.ga',
-          pass: '@dministr@t0r',
-        },
-      })
-      const mailOptions = {
-        from: 'administrator@academiagabon.ga',
-        to: userExist.email,
-
-        subject: 'ACADEMIA GABON: Réinitialisation du mot de passe',
-        text:
-          `${
-            "Vous recevez cela parce que vous (ou quelqu'un d'autre) avez demandé la réinitialisation du mot de passe de votre compte\n" +
-            'Veuillez cliquer sur le lien suivant ou collez-le dans votre navigateur pour terminer le processus\n\n' +
-            `${config.FRONT_URL}/password/`
-          }${resetToken}  \n\n` +
-          ` Si vous ne l'avez pas demandé, veuillez ignorer cet e-mail et votre mot de passe restera inchangé`,
-      }
-      // eslint-disable-next-line no-unused-vars
-      transporter.sendMail(mailOptions, (err, info) => {
-        console.log(`Reset Password successfully. ${err}`)
-      })
+      const subject= 'ACADEMIA GABON: Réinitialisation du mot de passe'
+      const text="Vous recevez cela parce que vous (ou quelqu'un d'autre) avez demandé la réinitialisation du mot de passe de votre compte\n" +'Veuillez cliquer sur le lien suivant ou collez-le dans votre navigateur pour terminer le processus\n\n' +`${config.FRONT_URL}/password/${resetToken}  \n\n` +` Si vous ne l'avez pas demandé, veuillez ignorer cet e-mail et votre mot de passe restera inchangé`
+    
+      Mailer("administrator@academiagabon.ga",userExist.email,subject,text)
       return res.status(200).json({
         message: `Nous vous avons envoyé un mail pour poursuivre la réinitialisation.`,
       })

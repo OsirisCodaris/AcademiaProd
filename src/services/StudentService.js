@@ -23,4 +23,14 @@ module.exports = {
         .send({ error: "Une erreur s'est produite", status: 400 })
     }
   },
+  async updated(req, res) {
+    try {
+      /* do something later */
+      return res.sendStatus(204)
+    } catch (error) {
+      return res
+        .status(500)
+        .send({ error: `Une erreur s'est produite${error}`, status: 500 })
+    }
+  }
 }

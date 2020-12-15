@@ -14,5 +14,11 @@ router
     UserService.create,
     TeacherService.create
   )
-
+router
+  .route('/teachers/:id([0-9]+)')
+  .put(
+    UserPolicy.updated,
+    UserService.updated,
+    TeacherService.updated
+  )
 module.exports = router

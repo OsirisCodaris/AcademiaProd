@@ -13,8 +13,8 @@ module.exports = {
   async dasboard(req, res) {
     try {
       const countAdmins = await Admins.count()
-      const countStudents = await Students.count()
-      const countTeachers = await Teachers.count()
+      const countStudents = (await Students.count())-37
+      const countTeachers = (await Teachers.count())-15
       const countClasses = await Classes.count()
       const countSubjects = await Subjects.count()
       const countDocuments = await Documents.count()

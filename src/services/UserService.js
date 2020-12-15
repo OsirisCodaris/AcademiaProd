@@ -1,4 +1,4 @@
-const { Op } = require('sequelize')
+const { ValidationError, Op } = require('sequelize')
 const { Users } = require('../models')
 const userUtils = require('../utils/UserUtils')
 
@@ -47,10 +47,19 @@ module.exports = {
           status: 404,
         })
       }
-      userExist.update(req.body.user)
+      await userExist.update(req.body.user)
       req.user = userExist
       return next()
     } catch (err) {
+        if(err instanceof ValidationError){
+           const message= err.errors[0].path === 'fullname'
+              ? "Ce nom d'utilisateur"
+              : 'Cet email'
+            return res.status(400).send({
+        error: `${message} existe déja`,
+        status: 400,
+      })
+        }
       return res.status(500).send({
         error: `Une s'est produite sur le serveur !${err}`,
         status: 500,
