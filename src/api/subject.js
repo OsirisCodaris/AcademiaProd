@@ -1,24 +1,24 @@
 const express = require('express')
 
 const router = express.Router()
-const SubjectService = require('../services/SubjectService')
-const ClasseSubjectService = require('../services/ClasseSubjectService')
+const SubjectControllers = require('../controllers/SubjectControllers')
+
 const isAuthenticate = require('../middleware/IsAuthenticate')
 const adminOnly = require('../middleware/adminOnly')
 const NamePolicy = require('../policies/NamePolicy')
 
 router
   .route('/subjects')
-  .post(isAuthenticate, adminOnly, NamePolicy, SubjectService.create)
-  .get(SubjectService.showAll)
+  .post(isAuthenticate, adminOnly, NamePolicy, SubjectControllers.create)
+  .get(SubjectControllers.showAll)
 
 router
   .route('/subjects/:id([0-9]+)')
-  .put(isAuthenticate, adminOnly, NamePolicy, SubjectService.update)
-  .delete(isAuthenticate, adminOnly, SubjectService.delete)
+  .put(isAuthenticate, adminOnly, NamePolicy, SubjectControllers.update)
+  .delete(isAuthenticate, adminOnly, SubjectControllers.delete)
 router
   .route('/classes/:idclasses([0-9]+)/subjects')
-  .get(ClasseSubjectService.showSubjectsInClasse)
-  .post(isAuthenticate, adminOnly, ClasseSubjectService.associate)
+  .get(SubjectControllers.showSubjectsInClasse)
+  .post(isAuthenticate, adminOnly, SubjectControllers.associate)
 
 module.exports = router

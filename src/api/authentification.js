@@ -1,11 +1,11 @@
 const express = require('express')
 
 const router = express.Router()
-const AuthentificationService = require('../services/AuthentificationService')
+const AuthentificationControllers = require('../controllers/AuthentificationControllers')
 
-router.route('/login').post(AuthentificationService.login)
-router.route('/token').post(AuthentificationService.token)
-router.route('/resetpassword').post(AuthentificationService.resetPassword)
-router.route('/password').post(AuthentificationService.newPassword)
+router.route('/login').post(AuthentificationControllers.login)
+router.route('/token').post(AuthentificationControllers.token)
+router.route('/resetpassword').post(AuthentificationControllers.resetPassword)
+router.route('/password').post(AuthentificationControllers.newPassword)
 
 module.exports = router

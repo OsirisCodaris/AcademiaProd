@@ -1,4 +1,6 @@
 const { Op } = require('sequelize')
+const ServerError = require('../config/ServerError')
+
 const {
   Admins,
   Students,
@@ -10,11 +12,11 @@ const {
 } = require('../models')
 
 module.exports = {
-  async dasboard(req, res) {
+  async dashboard() {
     try {
       const countAdmins = await Admins.count()
-      const countStudents = (await Students.count())-37
-      const countTeachers = (await Teachers.count())-15
+      const countStudents = (await Students.count()) - 37 // apprenant avant le lancement du 4/12/2020
+      const countTeachers = (await Teachers.count()) - 15 // professeur avant le lancement du 4/12/2020
       const countClasses = await Classes.count()
       const countSubjects = await Subjects.count()
       const countDocuments = await Documents.count()
@@ -24,7 +26,7 @@ module.exports = {
         },
       })
 
-      return res.status(201).send({
+      return {
         countAdmins,
         countStudents,
         countTeachers,
@@ -32,11 +34,9 @@ module.exports = {
         countSubjects,
         countDocuments,
         countDocAnswers,
-      })
+      }
     } catch (errors) {
-      return res
-        .status(400)
-        .send({ error: "Une erreur s'est produite", status: 400 })
+      throw new ServerError(errors)
     }
   },
 }

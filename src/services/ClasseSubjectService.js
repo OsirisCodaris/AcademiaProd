@@ -1,107 +1,100 @@
 const Sequelize = require('sequelize')
 const { Classes, Subjects, docAnswers } = require('../models')
+const RequestError = require('../config/RequestError')
+const ServerError = require('../config/ServerError')
 
 module.exports = {
-  async associate(req, res) {
+  async associate(idclasses, idsubjects) {
     try {
-      const idclasses = parseInt(req.params.idclasses, 10)
       const classe = await Classes.findByPk(idclasses)
       if (!classe) {
-        return res.status(400).send({
-          error: "la classe n'existe pas ou a été supprimé",
-          status: 400,
-        })
+        const error = new RequestError('Classe')
+        error.notExistOrDelete()
+        throw error
       }
-      const { idsubjects } = req.body
+
       const errors = []
       if (idsubjects.length) {
-        const add = []
+        const addSubjects = []
 
         for (const element of idsubjects) {
           const subject = await Subjects.findByPk(element)
           if (!subject) {
             errors.push(element)
           } else {
-            add.push(subject)
+            addSubjects.push(subject)
           }
         }
-        await classe.setSubjects(add)
+        await classe.setSubjects(addSubjects)
         // On renvoie le statut crée et la liste des erreurs rencontre (les matières ui n'existe pas)
-        return res.status(201).send({
-          error: errors,
-        })
+        return errors
       }
 
-      return res.status(400).send({
-        error: 'La liste des matières a associé est vide!',
-        status: 400,
-      })
-    } catch (error) {
-      return res
-        .status(500)
-        .send({ error: "Une erreur s'est produite", status: 500 })
+      const error = new RequestError('Matières')
+      error.Empty()
+      throw error
+    } catch (errors) {
+      if (errors instanceof RequestError) {
+        throw errors
+      }
+      throw new ServerError(errors)
     }
   },
-  async showSubjectsInClasse(req, res) {
+  async showSubjectsInClasse(idclasses) {
     try {
-      const idclasses = parseInt(req.params.idclasses, 10)
       const classe = await Classes.findByPk(idclasses)
       if (!classe) {
-        return res.status(404).send({
-          error: "la classe n'existe pas ou a été supprimé",
-          status: 404,
-        })
+        const error = new RequestError('Classe')
+        error.notExistOrDelete()
+        throw error
       }
 
       const subjectHasClasses = await classe.getSubjects()
       const count = await classe.countSubjects()
-      return res.status(200).send({
+      return {
         count,
         subjectHasClasses,
-      })
+      }
     } catch (errors) {
-      return res.status(500).send({
-        error: `Une erreur s'est produite sur le serveur`,
-        status: 500,
-      })
+      if (errors instanceof RequestError) {
+        throw errors
+      }
+      throw new ServerError(errors)
     }
   },
-  async showClassesHavSubject(req, res) {
+  async showClassesHavSubject(idsubjects) {
     try {
-      const idsubjects = parseInt(req.params.idsubjects, 10)
       console.log(idsubjects)
       const subject = await Subjects.findByPk(idsubjects)
       if (!subject) {
-        return res.status(404).send({
-          error: "la subject n'existe pas ou a été supprimé",
-          status: 404,
-        })
+        const error = new RequestError('Matière')
+        error.notExistOrDelete()
+        throw error
       }
 
       const subjectHasClasses = await subject.getClasses()
       const count = await subject.countClasses()
-      return res.status(200).send({
+      return {
         count,
         subjectHasClasses,
-      })
+      }
     } catch (errors) {
-      return res.status(500).send({
-        error: `Une erreur s'est produite sur le serveur`,
-        status: 500,
-      })
+      if (errors instanceof RequestError) {
+        throw errors
+      }
+      throw new ServerError(errors)
     }
   },
   // stat document et corrigé
-  async showSubjectsInClasseNstat(req, res) {
+  async showSubjectsInClasseNstat(idclasses) {
     try {
       const subjectHasClasses = []
-      const idclasses = parseInt(req.params.idclasses, 10)
+
       const classe = await Classes.findByPk(idclasses)
       if (!classe) {
-        return res.status(404).send({
-          error: "la classe n'existe pas ou a été supprimé",
-          status: 404,
-        })
+        const error = new RequestError('Classe')
+        error.notExistOrDelete()
+        throw error
       }
       const subjectHsClasses = await classe.getSubjects()
       await subjectHsClasses.forEach(async (subjectHasClasse) => {
@@ -135,27 +128,24 @@ module.exports = {
         subjectHasClasses.push(element)
       })
       const count = await classe.countSubjects()
-      return res.status(200).send({
+      return {
         count,
         subjectHasClasses,
-      })
+      }
     } catch (errors) {
-      return res.status(500).send({
-        error: `Une erreur s'est produite sur le serveur ${errors}`,
-        status: 500,
-      })
+      if (errors instanceof RequestError) {
+        throw errors
+      }
+      throw new ServerError(errors)
     }
   },
-  async showClassesHavSubjectNstat(req, res) {
+  async showClassesHavSubjectNstat(idsubjects) {
     try {
-      const idsubjects = parseInt(req.params.idsubjects, 10)
-      console.log(idsubjects)
       const subject = await Subjects.findByPk(idsubjects)
       if (!subject) {
-        return res.status(404).send({
-          error: "la matière n'existe pas ou a été supprimé",
-          status: 404,
-        })
+        const error = new RequestError('Matière')
+        error.notExistOrDelete()
+        throw error
       }
 
       const subjectHasClasses = []
@@ -188,15 +178,15 @@ module.exports = {
         subjectHasClasses.push(element)
       })
       const count = await subject.countClasses()
-      return res.status(200).send({
+      return {
         count,
         subjectHasClasses,
-      })
+      }
     } catch (errors) {
-      return res.status(500).send({
-        error: `Une erreur s'est produite sur le serveur`,
-        status: 500,
-      })
+      if (errors instanceof RequestError) {
+        throw errors
+      }
+      throw new ServerError(errors)
     }
   },
 }

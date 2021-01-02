@@ -1,25 +1,24 @@
 const { docAnswers } = require('../models')
+// const RequestError = require('../config/RequestError')
+const ServerError = require('../config/ServerError')
 // const sequelize = require('sequelize')
 
 module.exports = {
-  async created(req, res, next) {
+  async create(doc, DocAns) {
     try {
-      const { answerstatus, answerfile } = req.body
+      const { answerstatus, answerfile } = DocAns
       if (answerfile) {
         const docanswer = await docAnswers.create({
           pathfile: answerfile,
           status: answerstatus,
-          iddocuments: req.doc.iddocuments,
+          iddocuments: doc.iddocuments,
         })
-        req.docAnswer = docanswer
+        return docanswer
       }
-      return next()
-    } catch (error) {
-      req.doc.destroy()
-      return res.status(500).send({
-        error: `Une erreur s'est produite`,
-        status: 500,
-      })
+      return false
+    } catch (errors) {
+      doc.destroy()
+      throw new ServerError(errors)
     }
   },
   async showAll(req, res) {
@@ -33,10 +32,8 @@ module.exports = {
         count: docs.count,
         docs: docs.rows,
       })
-    } catch (error) {
-      return res.status(500).send({
-        error: `Une erreur s'est produite sur le serveur`,
-      })
+    } catch (errors) {
+      throw new ServerError(errors)
     }
   },
   async show(req, res) {
@@ -64,13 +61,13 @@ module.exports = {
       })
     }
   },
-  async updated(req, res, next) {
+  async update(id, DocUpdate) {
     try {
-      const { answerstatus, answerfile } = req.body
+      const { answerstatus, answerfile } = DocUpdate
 
       const docVerif = await docAnswers.findOne({
         where: {
-          iddocuments: req.params.id,
+          iddocuments: id,
         },
       })
       if (docVerif) {
@@ -82,15 +79,13 @@ module.exports = {
         await docAnswers.create({
           pathfile: answerfile,
           status: answerstatus,
-          iddocuments: req.params.id,
+          iddocuments: id,
         })
       }
 
-      return next()
-    } catch (error) {
-      return res.status(500).send({
-        error: `Une erreur s'est produite${error}`,
-      })
+      return true
+    } catch (errors) {
+      throw new ServerError(errors)
     }
   },
   async deleted(req, res) {

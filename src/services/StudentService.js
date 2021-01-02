@@ -1,36 +1,40 @@
 const { Students, Classes } = require('../models')
+const UserService = require('./UserService')
+const RequestError = require('../config/RequestError')
+const ServerError = require('../config/ServerError')
 
 module.exports = {
-  async create(req, res) {
+  async create(StudentCreate) {
     try {
-      const classe = await Classes.findByPk(req.body.student.idclasses)
+      const user = await UserService.create(StudentCreate.user)
+      const classe = await Classes.findByPk(StudentCreate.student.idclasses)
       if (!classe) {
-        return res.status(400).send({
-          error: "La classe n'existe pas ou a été supprimé",
-          status: 400,
-        })
+        const error = new RequestError('Classe')
+        error.notExistOrDelete()
+        throw error
       }
-      await Students.create({
+      const student = await Students.create({
         idclasses: classe.idclasses,
-        idstudents: req.user.idusers,
+        idstudents: user.idusers,
       })
-      return res.status(201).send({
-        user: req.user.idusers,
-      })
+      return student
     } catch (errors) {
-      return res
-        .status(400)
-        .send({ error: "Une erreur s'est produite", status: 400 })
+      if (errors instanceof RequestError) {
+        throw errors
+      }
+      throw new ServerError(errors)
     }
   },
-  async updated(req, res) {
+  async update(id, StudentUpdate) {
     try {
+      await UserService.update(id, StudentUpdate.user)
       /* do something later */
-      return res.sendStatus(204)
-    } catch (error) {
-      return res
-        .status(500)
-        .send({ error: `Une erreur s'est produite${error}`, status: 500 })
+      return true
+    } catch (errors) {
+      if (errors instanceof RequestError) {
+        throw errors
+      }
+      throw new ServerError(errors)
     }
-  }
+  },
 }

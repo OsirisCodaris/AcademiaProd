@@ -6,7 +6,7 @@ const winston = require('winston')
 const options = {
   info: {
     level: 'info',
-    filename: `../logs/info.log`,
+    filename: `logs/info.log`,
     handleExceptions: true,
     json: true,
     maxsize: 5242880, // 5MB
@@ -15,7 +15,7 @@ const options = {
   },
   error: {
     level: 'error',
-    filename: `../logs/error.log`,
+    filename: `logs/error.log`,
     handleExceptions: true,
     json: true,
     maxsize: 5242880, // 5MB
@@ -24,7 +24,7 @@ const options = {
   },
   warning: {
     level: 'warn',
-    filename: `../logs/warn.log`,
+    filename: `logs/warn.log`,
     handleExceptions: true,
     json: true,
     maxsize: 5242880, // 5MB
@@ -40,7 +40,7 @@ const options = {
 }
 
 // instantiate a new Winston Logger with the settings defined above
-let logger = winston.createLogger({
+const logger = winston.createLogger({
   transports: [
     new winston.transports.File(options.info),
     new winston.transports.File(options.error),

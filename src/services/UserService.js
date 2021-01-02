@@ -1,69 +1,58 @@
 const { ValidationError, Op } = require('sequelize')
 const { Users } = require('../models')
 const userUtils = require('../utils/UserUtils')
+const RequestError = require('../config/RequestError')
+const ServerError = require('../config/ServerError')
 
 module.exports = {
-  async create(req, res, next) {
+  async create(User) {
     try {
       const userExist = await Users.findOne({
         where: {
-          [Op.or]: [
-            { fullname: req.body.user.fullname },
-            { email: req.body.user.email },
-          ],
+          [Op.or]: [{ fullname: User.fullname }, { email: User.email }],
         },
       })
       if (userExist) {
         // si une instance de cet utilisateur existe déja on renvoie une erreur
         if (await userUtils.UserRole(userExist)) {
           const errorMessage =
-            userExist.fullname === req.body.user.fullname
-              ? "Ce nom d'utilisateur"
-              : 'Cet email'
-          return res
-            .status(400)
-            .send({ error: `${errorMessage} existe déja`, status: 400 })
+            userExist.fullname === User.fullname ? 'nom' : 'email'
+          const error = new RequestError(`Utilisateur - ${errorMessage}`)
+          error.Exist()
+          throw error
+          // return { error: `${errorMessage} existe déja`, success: false }
         }
-        console.log('ici')
         await userExist.destroy()
       }
-      const user = await Users.create(req.body.user)
-      req.user = user
-      return next()
-    } catch (err) {
-      return res.status(500).send({
-        error: `Une s'est produite sur le serveur !${err}`,
-        status: 500,
-      })
+      const user = await Users.create(User)
+      return user
+    } catch (errors) {
+      if (errors instanceof RequestError) {
+        throw errors
+      }
+      throw new ServerError(errors)
     }
   },
-  async updated(req, res, next) {
+  async update(id, User) {
     try {
-      const userExist = await Users.findByPk(req.params.id)
+      const userExist = await Users.findByPk(id)
       if (!userExist) {
         // si une instance de cet utilisateur existe déja on renvoie une erreur
-        return res.status(404).send({
-          error: `Cet utilisateur  n'existe pas ou a été supprimé`,
-          status: 404,
-        })
+        const error = new RequestError(`Utilisateur`)
+        error.notExistOrDelete()
+        throw error
       }
-      await userExist.update(req.body.user)
-      req.user = userExist
-      return next()
-    } catch (err) {
-        if(err instanceof ValidationError){
-           const message= err.errors[0].path === 'fullname'
-              ? "Ce nom d'utilisateur"
-              : 'Cet email'
-            return res.status(400).send({
-        error: `${message} existe déja`,
-        status: 400,
-      })
-        }
-      return res.status(500).send({
-        error: `Une s'est produite sur le serveur !${err}`,
-        status: 500,
-      })
+      await userExist.update(User)
+      return User
+    } catch (errors) {
+      if (errors instanceof ValidationError) {
+        const errorMessage =
+          errors.errors[0].path === 'fullname' ? 'nom' : 'email'
+        const error = new RequestError(`Utilisateur - ${errorMessage}`)
+        error.Exist()
+        throw error
+      }
+      throw new ServerError(errors)
     }
   },
 }

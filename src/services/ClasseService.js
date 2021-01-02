@@ -3,9 +3,8 @@ const RequestError = require('../config/RequestError')
 const ServerError = require('../config/ServerError')
 
 module.exports = {
-  async create(req, res, next) {
+  async create(name) {
     try {
-      const { name } = req.body
       const classeVerif = await Classes.findOne({
         where: {
           name,
@@ -19,28 +18,24 @@ module.exports = {
       const classe = await Classes.create({
         name,
       })
-      return res.status(201).send({
-        idclasses: classe.idclasses,
-      })
+      return classe
     } catch (errors) {
       if (errors instanceof RequestError) {
-        return next(errors)
+        throw errors
       }
-      return next(new ServerError(errors))
+      throw new ServerError(errors)
     }
   },
-  async showAll(req, res, next) {
+  async showAll() {
     try {
       const classe = await Classes.findAndCountAll()
-      return res.send(classe)
+      return classe
     } catch (errors) {
-      return next(new ServerError(errors))
+      return new ServerError(errors)
     }
   },
-  async delete(req, res, next) {
+  async delete(id) {
     try {
-      console.log(req.params)
-      const id = parseInt(req.params.id, 10)
       const classeVerif = await Classes.findOne({
         where: {
           idclasses: id,
@@ -52,38 +47,36 @@ module.exports = {
         throw error
       }
       await classeVerif.destroy()
-      return res.sendStatus(204)
+      return true
     } catch (errors) {
       if (errors instanceof RequestError) {
-        return next(errors)
+        throw errors
       }
-      return next(new ServerError(errors))
+      throw new ServerError(errors)
     }
   },
-  async update(req, res, next) {
+  async update(id, name) {
     try {
-      const id = parseInt(req.params.id, 10)
-      console.log(id)
       const classe = await Classes.findByPk(id)
       if (!classe) {
         const error = new RequestError('Classe')
         error.notExistOrDelete()
         throw error
       }
-      const { name } = req.body
+
       const nameVerif = await Classes.findOne({ where: { name } })
       if (nameVerif && nameVerif.name !== classe.name) {
-        const error = new RequestError('Nom')
+        const error = new RequestError('Classe - nom')
         error.Exist()
         throw error
       }
       await classe.update({ name })
-      return res.status(200).send({ idclasses: classe.idclasses })
+      return classe
     } catch (errors) {
       if (errors instanceof RequestError) {
-        return next(errors)
+        throw errors
       }
-      return next(new ServerError(errors))
+      throw new ServerError(errors)
     }
   },
 }

@@ -1,24 +1,14 @@
 const express = require('express')
 
 const router = express.Router()
-const TeacherService = require('../../services/TeacherService')
+const TeacherControllers = require('../../controllers/TeacherControllers')
 const TeacherPolicy = require('../../policies/TeacherPolicy')
-const UserService = require('../../services/UserService')
 const UserPolicy = require('../../policies/UsersPolicy')
 
 router
   .route('/teachers')
-  .post(
-    UserPolicy.register,
-    TeacherPolicy.register,
-    UserService.create,
-    TeacherService.create
-  )
+  .post(UserPolicy.register, TeacherPolicy.register, TeacherControllers.create)
 router
   .route('/teachers/:id([0-9]+)')
-  .put(
-    UserPolicy.updated,
-    UserService.updated,
-    TeacherService.updated
-  )
+  .put(UserPolicy.updated, TeacherControllers.update)
 module.exports = router

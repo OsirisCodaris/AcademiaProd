@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer')
 
-exports.Mailer = (from,to,subject,message)=>{
+exports.Mailer = (from, to, subject, message) => {
   const transporter = nodemailer.createTransport({
     host: 'mocha3027.mochahost.com',
     port: 465,
@@ -12,15 +12,13 @@ exports.Mailer = (from,to,subject,message)=>{
     },
   })
   const mailOptions = {
-    from: from,
-    to: to,
-
-    subject: subject,
-    text: message
+    from,
+    to,
+    subject,
+    text: message,
   }
   // eslint-disable-next-line no-unused-vars
   transporter.sendMail(mailOptions, (err, info) => {
     console.log(`Reset Password successfully. ${err}`)
   })
-
 }

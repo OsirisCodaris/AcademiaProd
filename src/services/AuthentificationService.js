@@ -3,6 +3,10 @@ const { Op } = require('sequelize')
 const { Users } = require('../models')
 const config = require('../config/config')
 const { Mailer } = require('../utils/Mailer')
+const RequestError = require('../config/RequestError')
+
+const ValidationError = require('../config/ValidationError')
+const ServerError = require('../config/ServerError')
 
 function jwtSignUser(user, expires) {
   return jwt.sign(user, config.JWT_SECRET, {
@@ -10,13 +14,13 @@ function jwtSignUser(user, expires) {
   })
 }
 module.exports = {
-  async token(req, res) {
+  async token(Token) {
     try {
-      jwt.verify(req.body.refresh_token, config.JWT_SECRET)
+      jwt.verify(Token.refresh_token, config.JWT_SECRET)
 
       const currentUser = await Users.findOne({
         where: {
-          refreshtoken: req.body.refresh_token,
+          refreshtoken: Token.refresh_token,
         },
       })
       if (currentUser) {
@@ -28,39 +32,39 @@ module.exports = {
         const refreshToken = jwtSignUser(userJson, config.JWT_REFRESH)
         // currentUser.refreshtoken = refreshToken
         await currentUser.update({ refreshtoken: refreshToken })
-        return res.status(201).send({
+        return {
           token: jwtSignUser(userJson, config.JWT_TOKEN),
           refreshToken,
-        })
+        }
       }
-      return res.status(401).send({
-        error: `Veuillez vous reconnectez`,
-        status: 401,
-      })
-    } catch (err) {
-      return res.status(401).send({
-        error: `Une s'est produite sur le serveur !${err}`,
-      })
+      const error = new RequestError(`Utilisateur`)
+      error.unAuthorized()
+      throw error
+    } catch (errors) {
+      if (errors instanceof RequestError) {
+        throw errors
+      }
+      throw new ServerError(errors)
     }
   },
-  async login(req, res) {
+  async login(User) {
     try {
-      const { fullname, password } = req.body
+      const { fullname, password } = User
       const user = await Users.findOne({
         where: {
           [Op.or]: [{ fullname }, { email: fullname }],
         },
       })
       if (!user) {
-        return res.status(400).send({
-          message: 'Les informations envoyées sont incorrects',
-        })
+        const error = new ValidationError(`Utilisateur`)
+        error.default()
+        throw error
       }
       const isValidPassword = await user.comparePassword(password)
       if (!isValidPassword) {
-        return res.status(400).send({
-          message: 'Les informations envoyées sont incorrects',
-        })
+        const error = new ValidationError(`Utilisateur`)
+        error.default()
+        throw error
       }
 
       const isAdmin = await user.getAdmin()
@@ -85,7 +89,7 @@ module.exports = {
       const refreshToken = jwtSignUser(userJson, config.JWT_REFRESH)
       user.refreshtoken = refreshToken
       await user.save()
-      return res.send({
+      return {
         idusers: user.idusers,
         fullname: user.fullname,
         email: user.email,
@@ -99,26 +103,26 @@ module.exports = {
         role: user.role,
         token,
         refreshToken,
-      })
-    } catch (err) {
-      return res.status(500).send({
-        error: `une erreur s'est produit réessayer plus tard ${err}`,
-      })
+      }
+    } catch (errors) {
+      if (errors instanceof ValidationError) {
+        throw errors
+      }
+      throw new ServerError(errors)
     }
   },
-  async resetPassword(req, res) {
+  async resetPassword(email) {
     try {
       const userExist = await Users.findOne({
         where: {
-          email: req.body.email,
+          email,
         },
       })
       if (!userExist) {
         // si une instance de cet utilisateur existe déja on renvoie une erreur
-        return res.status(404).send({
-          error: `Cet email n'existe pas!`,
-          status: 404,
-        })
+        const error = new RequestError(`Utilisateur - email`)
+        error.notExistOrDelete()
+        throw error
       }
 
       if (!userExist.refreshtoken) {
@@ -132,36 +136,39 @@ module.exports = {
         await userExist.save()
       }
       const resetToken = userExist.refreshtoken
-      const subject= 'ACADEMIA GABON: Réinitialisation du mot de passe'
-      const text="Vous recevez cela parce que vous (ou quelqu'un d'autre) avez demandé la réinitialisation du mot de passe de votre compte\n" +'Veuillez cliquer sur le lien suivant ou collez-le dans votre navigateur pour terminer le processus\n\n' +`${config.FRONT_URL}/password/${resetToken}  \n\n` +` Si vous ne l'avez pas demandé, veuillez ignorer cet e-mail et votre mot de passe restera inchangé`
-    
-      Mailer("administrator@academiagabon.ga",userExist.email,subject,text)
-      return res.status(200).json({
-        message: `Nous vous avons envoyé un mail pour poursuivre la réinitialisation.`,
-      })
-    } catch (error) {
-      return res.status(500).send({
-        error: `une erreur s'est produit réessayer plus tard ${error}`,
-      })
+      const subject = 'ACADEMIA GABON: Réinitialisation du mot de passe'
+      const text =
+        "Vous recevez cela parce que vous (ou quelqu'un d'autre) avez demandé la réinitialisation du mot de passe de votre compte\n" +
+        'Veuillez cliquer sur le lien suivant ou collez-le dans votre navigateur pour terminer le processus\n\n' +
+        `${config.FRONT_URL}/password/${resetToken}  \n\n` +
+        ` Si vous ne l'avez pas demandé, veuillez ignorer cet e-mail et votre mot de passe restera inchangé`
+
+      Mailer('administrator@academiagabon.ga', userExist.email, subject, text)
+      return true
+    } catch (errors) {
+      if (errors instanceof RequestError) {
+        throw errors
+      }
+      throw new ServerError(errors)
     }
   },
-  async newPassword(req, res) {
+  async newPassword(User) {
     try {
-      const { resetToken, password } = req.body
+      const { resetToken, password } = User
       const currentUser = await Users.findOne({
         where: {
           refreshtoken: resetToken,
         },
       })
       if (!currentUser) {
-        return res.status(404).send({
-          error: 'la clé de réinitialisation a expiré',
-        })
+        const error = new RequestError(`Utilisateur`)
+        error.expiredKey()
+        throw error
       }
-      if (password.lenght < 8) {
-        return res.status(400).send({
-          error: 'Le mot de passe doit contenir au moins 8 caractères',
-        })
+      if (password.length < 8) {
+        const error = new ValidationError(`Utilisateur`)
+        error.noPasswordOrInvalid()
+        throw error
       }
       const userJson = {
         idusers: currentUser.idusers,
@@ -174,13 +181,12 @@ module.exports = {
         refreshtoken: refreshToken,
         password,
       })
-      return res.status(201).send({
-        message: 'le mot de passe a été modifié',
-      })
-    } catch (err) {
-      return res.status(500).send({
-        error: `une erreur s'est produit réessayer plus tard ${err}`,
-      })
+      return true
+    } catch (errors) {
+      if (errors instanceof RequestError || errors instanceof ValidationError) {
+        throw errors
+      }
+      throw new ServerError(errors)
     }
   },
 }

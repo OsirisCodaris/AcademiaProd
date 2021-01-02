@@ -1,32 +1,33 @@
 const { Notions } = require('../models')
+const ServerError = require('../config/ServerError')
 // const sequelize = require('sequelize')
 
 module.exports = {
-  async created(req, res, next) {
+  async create(doc, DocCreate) {
     try {
-      const { notions } = req.body
+      const { notions } = DocCreate
       if (notions) {
         await Notions.create({
           notions,
-          iddocuments: req.doc.iddocuments,
+          iddocuments: doc.iddocuments,
         })
+        return true
       }
-      return next()
-    } catch (error) {
-      req.doc.destroy()
-      return res.status(500).send({
-        error: `Une erreur s'est produite`,
-        status: 500,
-      })
+      return false
+    } catch (errors) {
+      doc.destroy()
+      throw new ServerError(errors)
     }
   },
-  async updated(req, res, next) {
+  async update(id, DocUpdate) {
     try {
-      const { notions } = req.body
-
+      const { notions } = DocUpdate
+      if (!notions) {
+        return false
+      }
       const notion = await Notions.findOne({
         where: {
-          iddocuments: req.params.id,
+          iddocuments: id,
         },
       })
 
@@ -37,15 +38,13 @@ module.exports = {
       } else {
         await Notions.create({
           notions,
-          iddocuments: req.params.id,
+          iddocuments: id,
         })
       }
 
-      return next()
-    } catch (error) {
-      return res.status(500).send({
-        error: `Une erreur s'est produite  -${error}`,
-      })
+      return true
+    } catch (errors) {
+      throw new ServerError(errors)
     }
   },
 }

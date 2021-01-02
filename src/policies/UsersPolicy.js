@@ -31,7 +31,7 @@ module.exports = {
     const schema = {
       fullname: Joi.string().min(3).required(),
       phone: Joi.string().regex(new RegExp('^[+]*[0-9]{8,}$')),
-      email: Joi.string().email(),
+      email: Joi.string().email().required(),
       password: Joi.string().min(8).required(),
     }
     const { error } = Joi.validate(req.body.user, schema)
@@ -45,7 +45,7 @@ module.exports = {
     const schema = {
       fullname: Joi.string().min(3).required(),
       phone: Joi.string().regex(new RegExp('^[+]*[0-9]{8,}$')),
-      email: Joi.string().email(),
+      email: Joi.string().email().required(),
       password: Joi.string().min(8).optional(),
     }
     const { error } = Joi.validate(req.body.user, schema)

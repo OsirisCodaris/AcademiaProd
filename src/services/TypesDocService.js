@@ -3,68 +3,62 @@ const RequestError = require('../config/RequestError')
 const ServerError = require('../config/ServerError')
 
 module.exports = {
-  async create(req, res, next) {
+  async create(name) {
     try {
-      const { name } = req.body
       const typeDocVerif = await typeDocs.findOne({
         where: {
           name,
         },
       })
       if (typeDocVerif) {
-        const error = new RequestError('Catégories')
+        const error = new RequestError('Catégories - nom')
         error.Exist()
         throw error
       }
       const type = await typeDocs.create({
         name,
       })
-      return res.status(201).send({
-        idtypedocs: type.idtypedocs,
-      })
+      return type
     } catch (errors) {
       if (errors instanceof RequestError) {
-        return next(errors)
+        throw errors
       }
-      return next(new ServerError(errors))
+      throw new ServerError(errors)
     }
   },
-  async showAll(req, res, next) {
+  async showAll() {
     try {
       const typedocs = await typeDocs.findAndCountAll()
-      return res.status(201).send(typedocs)
+      return typedocs
     } catch (errors) {
-      return next(new ServerError(errors))
+      return new ServerError(errors)
     }
   },
-  async update(req, res, next) {
+  async update(id, name) {
     try {
-      const id = parseInt(req.params.id, 10)
       const typeDoc = await typeDocs.findByPk(id)
       if (!typeDoc) {
         const error = new RequestError('Catégories')
         error.notExistOrDelete()
         throw error
       }
-      const { name } = req.body
       const nameVerif = await typeDocs.findOne({ where: { name } })
       if (nameVerif && nameVerif.name !== typeDoc.name) {
-        const error = new RequestError('Nom')
+        const error = new RequestError('Ctégories - nom')
         error.Exist()
         throw error
       }
       await typeDoc.update({ name })
-      return res.status(200).send({ idtypedocs: typeDoc.idtypedocs })
+      return typeDoc
     } catch (errors) {
       if (errors instanceof RequestError) {
-        return next(errors)
+        throw errors
       }
-      return next(new ServerError(errors))
+      throw new ServerError(errors)
     }
   },
-  async delete(req, res, next) {
+  async delete(id) {
     try {
-      const id = parseInt(req.params.id, 10)
       const typeDocVerif = await typeDocs.findByPk(id)
       if (!typeDocVerif) {
         const error = new RequestError('Catégories')
@@ -72,12 +66,12 @@ module.exports = {
         throw error
       }
       await typeDocVerif.destroy()
-      return res.sendStatus(204)
+      return true
     } catch (errors) {
       if (errors instanceof RequestError) {
-        return next(errors)
+        throw errors
       }
-      return next(new ServerError(errors))
+      throw new ServerError(errors)
     }
   },
 }

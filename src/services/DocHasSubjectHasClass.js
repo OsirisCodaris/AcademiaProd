@@ -1,15 +1,16 @@
 const Sequelize = require('sequelize')
 const { subjectsHasClasses, docAnswers, Notions } = require('../models')
+const RequestError = require('../config/RequestError')
+const ServerError = require('../config/ServerError')
 
 module.exports = {
-  async associate(req, res) {
+  async associate(doc, DocCreate) {
     try {
-      const idsubjects = parseInt(req.body.idsubjects, 10)
-      const { doc } = req
-      const classesID = req.body.idclasses
+      const idsubjects = parseInt(DocCreate.idsubjects, 10)
+      const classesID = DocCreate.idclasses
       const errors = []
       // si on modifie les association d'une classe avec des matières on réinitialise
-      await doc.setDocInSubjectClasses(null)
+      // await doc.setDocInSubjectClasses(null)
       // On parcours le tableau reçu et on ajoute les association entre les matiere et les classe
       if (Array.isArray(classesID)) {
         for (const idclasses of classesID) {
@@ -22,7 +23,7 @@ module.exports = {
           if (!subjecthasclass) {
             errors.push(idclasses)
           }
-          await doc.addDocInSubjectClasses(subjecthasclass)
+          await doc.setDocInSubjectClasses(subjecthasclass)
         }
       } else {
         const subjecthasclass = await subjectsHasClasses.findOne({
@@ -38,28 +39,14 @@ module.exports = {
       }
 
       // On renvoie le statut crée et la liste des erreurs rencontre (les matières ui n'existe pas)
-      return res.status(201).send({
-        iddocuments: doc.iddocuments,
-        ClassError: errors,
-      })
-    } catch (error) {
-      /* if (req.docAnswer) {
-        await req.docAnswer.destroy()
-      } */
-      if (req.doc) {
-        await req.doc.destroy()
-      }
-
-      return res.status(500).send({
-        error: `Une erreur s'est produite sur le serveur ${error}`,
-        status: 500,
-      })
+      return errors
+    } catch (errors) {
+      doc.destroy()
+      throw new ServerError(errors)
     }
   },
-  async showByClasseSubject(req, res) {
+  async showByClasseSubject(idclasses, idsubjects, idtypedocs) {
     try {
-      const idtypedocs = parseInt(req.query.typedocs, 10)
-      const { idclasses, idsubjects } = req.params
       const subjecthasclass = await subjectsHasClasses.findOne({
         where: {
           idclasses,
@@ -67,9 +54,9 @@ module.exports = {
         },
       })
       if (!subjecthasclass) {
-        return res
-          .status(404)
-          .send({ error: 'Aucun document trouvé', status: 404 })
+        const error = new RequestError('Document')
+        error.Empty()
+        throw error
       }
       if (idtypedocs) {
         const docInClasseSubject = await subjecthasclass.getDocInSubjectClasses(
@@ -88,7 +75,7 @@ module.exports = {
         const count = await subjecthasclass.countDocInSubjectClasses({
           where: { idtypedocs },
         })
-        return res.status(200).send({ count, docInClasseSubject })
+        return { count, docInClasseSubject }
       }
       const docInClasseSubject = await subjecthasclass.getDocInSubjectClasses({
         include: [
@@ -101,17 +88,16 @@ module.exports = {
         ],
       })
       const count = await subjecthasclass.countDocInSubjectClasses()
-      return res.status(200).send({ count, docInClasseSubject })
-    } catch (error) {
-      return res.status(500).send({
-        error: `Une erreur s'est produite sur le serveur`,
-        status: 500,
-      })
+      return { count, docInClasseSubject }
+    } catch (errors) {
+      if (errors instanceof RequestError) {
+        throw errors
+      }
+      throw new ServerError(errors)
     }
   },
-  async showDocRandomInClass(req, res) {
+  async showDocRandomInClass(idclasses) {
     try {
-      const { idclasses } = req.params
       const subjecthasclasses = await subjectsHasClasses.findOne({
         where: {
           idclasses,
@@ -119,9 +105,9 @@ module.exports = {
         order: [Sequelize.literal('RAND()')],
       })
       if (!subjecthasclasses) {
-        return res
-          .status(404)
-          .send({ error: 'Aucun document trouvé', status: 404 })
+        const error = new RequestError('Document')
+        error.Empty()
+        throw error
       }
 
       const docInClasseSubject = await subjecthasclasses.getDocInSubjectClasses(
@@ -138,17 +124,16 @@ module.exports = {
           ],
         }
       )
-      return res.status(200).send({ docInClasseSubject })
-    } catch (error) {
-      return res.status(500).send({
-        error: `Une erreur s'est produite sur le serveur ${error}`,
-        status: 500,
-      })
+      return docInClasseSubject
+    } catch (errors) {
+      if (errors instanceof RequestError) {
+        throw errors
+      }
+      throw new ServerError(errors)
     }
   },
-  async showDocRandomInSubject(req, res) {
+  async showDocRandomInSubject(idsubjects) {
     try {
-      const { idsubjects } = req.params
       const subjecthasclasses = await subjectsHasClasses.findOne({
         where: {
           idsubjects,
@@ -157,9 +142,9 @@ module.exports = {
         limit: 1,
       })
       if (!subjecthasclasses) {
-        return res
-          .status(404)
-          .send({ error: 'Aucun document trouvé', status: 404 })
+        const error = new RequestError('Document')
+        error.Empty()
+        throw error
       }
 
       const docInClasseSubject = await subjecthasclasses.getDocInSubjectClasses(
@@ -176,12 +161,12 @@ module.exports = {
           ],
         }
       )
-      return res.status(200).send({ docInClasseSubject })
-    } catch (error) {
-      return res.status(500).send({
-        error: `Une erreur s'est produite sur le serveur ${error}`,
-        status: 500,
-      })
+      return docInClasseSubject
+    } catch (errors) {
+      if (errors instanceof RequestError) {
+        throw errors
+      }
+      throw new ServerError(errors)
     }
   },
 }

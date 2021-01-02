@@ -1,41 +1,45 @@
 const { Teachers, Subjects } = require('../models')
+const UserService = require('./UserService')
+const RequestError = require('../config/RequestError')
+const ServerError = require('../config/ServerError')
 
 module.exports = {
-  async create(req, res) {
+  async create(TeacherCreate) {
     try {
-      const subject = await Subjects.findByPk(req.body.teacher.idsubjects)
+      const user = await UserService.create(TeacherCreate.user)
+      const subject = await Subjects.findByPk(TeacherCreate.teacher.idsubjects)
       if (!subject) {
-        return res.status(400).send({
-          error: "La matière n'existe pas ou a été supprimé",
-          status: 400,
-        })
+        const error = new RequestError('Matière')
+        error.notExistOrDelete()
+        throw error
       }
 
-      await Teachers.create({
-        city: req.body.teacher.city,
-        classes: req.body.teacher.classes,
-        phone2: req.body.teacher.phone2,
-        tutor: req.body.teacher.tutor,
+      const teacher = await Teachers.create({
+        city: TeacherCreate.teacher.city,
+        classes: TeacherCreate.teacher.classes,
+        phone2: TeacherCreate.teacher.phone2,
+        tutor: TeacherCreate.teacher.tutor,
         idsubjects: subject.idsubjects,
-        idteachers: req.user.idusers,
+        idteachers: user.idusers,
       })
-      return res.status(201).send({
-        idusers: req.user.idusers,
-      })
+      return teacher
     } catch (errors) {
-      return res
-        .status(500)
-        .send({ error: `Une erreur s'est produite :${errors}`, status: 500 })
+      if (errors instanceof RequestError) {
+        throw errors
+      }
+      throw new ServerError(errors)
     }
   },
-  async updated(req, res) {
+  async update(id, TeacherUpdate) {
     try {
+      await UserService.update(id, TeacherUpdate.user)
       /* do something later */
-      return res.sendStatus(204)
-    } catch (error) {
-      return res
-        .status(500)
-        .send({ error: `Une erreur s'est produite${error}`, status: 500 })
+      return true
+    } catch (errors) {
+      if (errors instanceof RequestError) {
+        throw errors
+      }
+      throw new ServerError(errors)
     }
-  }
+  },
 }
