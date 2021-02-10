@@ -1,3 +1,7 @@
+const moment = require('moment')
+
+const year = parseInt(moment().format('YYYY'), 10)
+
 class ValidationError extends Error {
   constructor(message) {
     super(message)
@@ -21,6 +25,26 @@ class ValidationError extends Error {
 
   noPhoneOrInvalid() {
     this.message = `${this.message}: Le numéro de téléphone  est incorrect`
+    this.status = 400
+  }
+
+  nofileOrInvalid() {
+    this.message = `${this.message}: Le document ne peut être vide ou etre autre type de fichier qu'une image ou un document`
+    this.status = 400
+  }
+
+  noContent() {
+    this.message = `${this.message}: Vous devez renseigner votre message`
+    this.status = 400
+  }
+
+  noSpec(element) {
+    this.message = `${this.message}: ${element} - n'a pas été spécifier`
+    this.status = 400
+  }
+
+  invalidYear() {
+    this.message = `${this.message}: L'année doit être comprise entre 1900 et ${year}`
     this.status = 400
   }
 

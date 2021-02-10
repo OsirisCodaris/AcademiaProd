@@ -62,12 +62,25 @@ module.exports = {
         const docInClasseSubject = await subjecthasclass.getDocInSubjectClasses(
           {
             where: { idtypedocs },
+            attributes: {
+              include: [
+                [
+                  Sequelize.fn('', Sequelize.col('docAnswer.pathfile')),
+                  'pathAnswer',
+                ],
+                [Sequelize.col('docAnswer.status'), 'statusAnswer'],
+                [Sequelize.fn('', Sequelize.col('Notion.notions')), 'notions'],
+              ],
+              // exclude: ['idsubjects', 'idsubjectshasclasses'],
+            },
             include: [
               {
                 model: docAnswers,
+                attributes: [],
               },
               {
                 model: Notions,
+                attributes: [],
               },
             ],
           }
@@ -78,12 +91,25 @@ module.exports = {
         return { count, docInClasseSubject }
       }
       const docInClasseSubject = await subjecthasclass.getDocInSubjectClasses({
+        attributes: {
+          include: [
+            [
+              Sequelize.fn('', Sequelize.col('docAnswer.pathfile')),
+              'pathAnswer',
+            ],
+            [Sequelize.col('docAnswer.status'), 'statusAnswer'],
+            [Sequelize.fn('', Sequelize.col('Notion.notions')), 'notions'],
+          ],
+          // exclude: ['idsubjects', 'idsubjectshasclasses'],
+        },
         include: [
           {
             model: docAnswers,
+            attributes: [],
           },
           {
             model: Notions,
+            attributes: [],
           },
         ],
       })
@@ -114,12 +140,28 @@ module.exports = {
         {
           order: [Sequelize.literal('RAND()')],
           limit: 7,
+          attributes: {
+            include: [
+              [
+                Sequelize.fn('', Sequelize.col('docAnswer.pathfile')),
+                'pathAnswer',
+              ],
+              [
+                Sequelize.fn('', Sequelize.col('docAnswer.status')),
+                'statusAnswer',
+              ],
+              [Sequelize.fn('', Sequelize.col('Notion.notions')), 'notions'],
+            ],
+            // exclude: ['idsubjects', 'idsubjectshasclasses'],
+          },
           include: [
             {
               model: docAnswers,
+              attributes: [],
             },
             {
               model: Notions,
+              attributes: [],
             },
           ],
         }
@@ -151,12 +193,25 @@ module.exports = {
         {
           order: [Sequelize.literal('RAND()')],
           limit: 7,
+          attributes: {
+            include: [
+              [
+                Sequelize.fn('', Sequelize.col('docAnswer.pathfile')),
+                'pathAnswer',
+              ],
+              [Sequelize.col('docAnswer.status'), 'statusAnswer'],
+              [Sequelize.fn('', Sequelize.col('Notion.notions')), 'notions'],
+            ],
+            // exclude: ['idsubjects', 'idsubjectshasclasses'],
+          },
           include: [
             {
               model: docAnswers,
+              attributes: [],
             },
             {
               model: Notions,
+              attributes: [],
             },
           ],
         }

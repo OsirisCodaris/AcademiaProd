@@ -29,9 +29,14 @@ class RequestError extends Error {
     this.status = 401
   }
 
+  teacherCantWrite() {
+    this.message += ': Un autre prof a déjà répondu'
+    this.status = 400
+  }
+
   expiredKey() {
     this.message += ': a expiré ou introuvable'
-    this.status = 404
+    this.status = 403
   }
 }
 module.exports = RequestError

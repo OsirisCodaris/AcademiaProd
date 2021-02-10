@@ -14,6 +14,11 @@ const reader = require('./Docs/reader')
 
 const stats = require('./Stats/stats')
 
+const problem = require('./Forum/problem')
+const response = require('./Forum/response')
+const statForum = require('./Forum/stats')
+const readerfile = require('./Forum/readerfile')
+
 module.exports = (app) => {
   app.use('/v1', authentification)
   app.use('/v1', student)
@@ -25,4 +30,8 @@ module.exports = (app) => {
   app.use('/v1', reader)
   app.use('/v1', admin)
   app.use('/v1', stats)
+  app.use('/v1', problem)
+  app.use('/v1', response)
+  app.use('/v1', statForum)
+  app.use('/v1', readerfile)
 }

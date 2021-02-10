@@ -4,6 +4,9 @@ const config = require('./config')
 
 const storage = multer.diskStorage({
   destination: (req, file, callback) => {
+    if (file.fieldname === 'file') {
+      callback(null, config.forum.path)
+    }
     callback(null, config.doc.path)
   },
   filename(req, file, callback) {
@@ -26,6 +29,16 @@ const upload = multer({
       if (ext !== '.pdf' && ext !== '.PDF') {
         callback(
           new Error("Seule l'extension pdf est acceptées comme documents")
+        )
+      } else {
+        callback(null, true)
+      }
+    } else if (file.fieldname === 'file') {
+      if (!config.forum.extensions.includes(ext)) {
+        callback(
+          new Error(
+            'Seuls les extensions .png, .PNG, .jpg, .JPG, .jpeg, .JPEG, .pdf, .PDF'
+          )
         )
       } else {
         callback(null, true)

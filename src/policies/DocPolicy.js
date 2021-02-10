@@ -1,50 +1,36 @@
 const Joi = require('joi')
 const moment = require('moment')
+const ValidationError = require('../config/ValidationError')
 
 const year = parseInt(moment().format('YYYY'), 10)
 
-function checkError(error, res) {
+function checkError(error, next) {
+  const errors = new ValidationError('Document')
   switch (error.details[0].context.key) {
     case 'name':
-      res.status(400).send({
-        error: 'Le titre est obligatoire et ne pas être vide',
-      })
-      break
+      errors.noNameOrInvalid()
+      return next(errors)
     case 'pathfile':
-      res.status(400).send({
-        error: 'Le document ne peut être vide',
-      })
-      break
+      errors.nofileOrInvalid()
+      return next(errors)
     case 'year':
-      res.status(400).send({
-        error: `L'année doit être comprise entre 1900 et ${year}`,
-      })
-      break
+      errors.invalidYear()
+      return next(errors)
     case 'status':
-      res.status(400).send({
-        error: "Le status n'a pas été spécifier",
-      })
-      break
+      errors.noSpec('status')
+      return next(errors)
     case 'idtypedocs':
-      res.status(400).send({
-        error: "Le type du document n'a pas été spécifier",
-      })
-      break
+      errors.noSpec('type document')
+      return next(errors)
     case 'idclasses':
-      res.status(400).send({
-        error: "La classe n'a pas été spécifier",
-      })
-      break
+      errors.noSpec('classes')
+      return next(errors)
     case 'idsubjects':
-      res.status(400).send({
-        error: "La matière n'a pas été spécifier",
-      })
-      break
+      errors.noSpec('matières')
+      return next(errors)
     default:
-      res.status(400).send({
-        error: 'Les informations que vous avez entrées sont incorrects',
-      })
-      break
+      errors.default()
+      return next(errors)
   }
 }
 
@@ -95,7 +81,7 @@ module.exports = {
     }
     const { error } = Joi.validate(req.body, schema)
     if (error) {
-      checkError(error, res)
+      checkError(error, res, next)
     } else {
       next()
     }

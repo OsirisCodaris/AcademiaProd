@@ -1,4 +1,5 @@
 /* jshint indent: 2 */
+const config = require('../config/config')
 
 module.exports = (sequelize, DataTypes) => {
   const Response = sequelize.define(
@@ -14,7 +15,16 @@ module.exports = (sequelize, DataTypes) => {
         type: 'LONGTEXT',
         allowNull: true,
       },
-      state: {
+      file: {
+        type: 'TEXT',
+        allowNull: true,
+        get() {
+          return this.getDataValue('file') != null
+            ? `${config.URL_READ_FORUM_FILE}/${this.getDataValue('file')}`
+            : null
+        },
+      },
+      status: {
         type: DataTypes.INTEGER(1),
         allowNull: true,
       },
@@ -31,7 +41,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       idusers: {
         type: DataTypes.INTEGER(11),
-        allowNull: true,
+        allowNull: false,
         references: {
           model: {
             tableName: 'users',

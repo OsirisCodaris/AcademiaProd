@@ -24,6 +24,15 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'idsubjectshasclasses',
       otherKey: 'iddocuments',
     })
+    subjectsHasClasses.hasMany(models.Problems, {
+      foreignKey: 'idsubjectshasclasses',
+    })
+    subjectsHasClasses.belongsTo(models.Classes, {
+      foreignKey: 'idclasses',
+    })
+    subjectsHasClasses.belongsTo(models.Subjects, {
+      foreignKey: 'idsubjects',
+    })
   }
 
   return subjectsHasClasses

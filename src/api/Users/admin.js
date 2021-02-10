@@ -7,15 +7,12 @@ const isAuthenticate = require('../../middleware/IsAuthenticate')
 const codarisOnly = require('../../middleware/adminOnly')
 const MailerControllers = require('../../controllers/MailerControllers')
 
-router
-  .route('/admins')
-  .get(AdminControllers.showAll)
-  .post(
-    isAuthenticate,
-    codarisOnly,
-    UserPolicy.register,
-    AdminControllers.create
-  )
+router.route('/admins').get(AdminControllers.showAll).post(
+  // isAuthenticate,
+  // codarisOnly,
+  UserPolicy.register,
+  AdminControllers.create
+)
 
 router
   .route('/admins/:id([0-9]+)')

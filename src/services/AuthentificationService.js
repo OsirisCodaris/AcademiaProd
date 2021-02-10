@@ -38,11 +38,15 @@ module.exports = {
         }
       }
       const error = new RequestError(`Utilisateur`)
-      error.unAuthorized()
+      error.notExistOrDelete()
       throw error
     } catch (errors) {
       if (errors instanceof RequestError) {
         throw errors
+      } else if (errors instanceof jwt.JsonWebTokenError) {
+        const error = new RequestError(`Token`)
+        error.expiredKey()
+        throw error
       }
       throw new ServerError(errors)
     }

@@ -4,9 +4,9 @@ const router = express.Router()
 const path = require('path')
 const config = require('../../config/config')
 
-router.route('/reader/:file').get((req, res) => {
+router.route('/readerfile/:file').get((req, res) => {
   const options = {
-    root: path.join(process.cwd(), config.doc.path),
+    root: path.join(process.cwd(), config.forum.path),
     dotfiles: 'deny',
     headers: {
       'x-timestamp': Date.now(),

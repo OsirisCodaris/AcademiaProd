@@ -16,7 +16,24 @@ module.exports = {
   doc: {
     path: process.env.DOC_PATH || 'public/documents',
   },
+  forum: {
+    path: process.env.FORUM_PATH || 'public/forum',
+    extensions: [
+      '.png',
+      '.PNG',
+      '.jpg',
+      '.JPG',
+      '.jpeg',
+      '.JPEG',
+      '.pdf',
+      '.PDF',
+    ],
+  },
+
   port: process.env.APP_PORT || 8080,
   FRONT_URL: process.env.FRONT_URL || 'http://localhost:8080/#',
-  URL_READ_DOC: process.env.URL_READ_DOC || 'http://localhost:1999/v1/reader',
+  URL_READ_DOC:
+    process.env.URL_READ_DOC || 'http://192.168.4.75:1999/v1/reader',
+  URL_READ_FORUM_FILE:
+    process.env.URL_READ_DOC || 'http://192.168.4.75:1999/v1/readerfile',
 }

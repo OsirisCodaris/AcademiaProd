@@ -1,33 +1,41 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
+const http = require('http')
+const socket = require('socket.io')
 const morgan = require('morgan')
 const compression = require('compression')
 
 const config = require('../config/config')
 const routes = require('../api/v1')
+const routesChat = require('../api/Chat/socketChat')
 require('../config/passport')
 const winston = require('../config/winston')
 
 class ExpressLoader {
   constructor() {
     const app = express()
-
+    const httpServer = http.createServer(app)
+    const io = socket(httpServer)
+    routesChat(io)
     app.use(compression())
     app.use(bodyParser.json())
     app.use(cors())
 
     app.use(morgan('combined', { stream: winston.stream }))
-
+    app.get('/chat', (req, res) => {
+      res.sendFile(`${__dirname}/index.html`)
+    })
     // Pass app to routes
     // Setup error handling, this must be after all other middleware
 
     routes(app)
     app.use(ExpressLoader.errorHandler)
     // Start application
-    this.server = app.listen(config.port, () => {
+    this.server = httpServer.listen(config.port, () => {
       winston.info(`Express running, now listening on port ${config.port}`)
     })
+    //
   }
 
   get Server() {

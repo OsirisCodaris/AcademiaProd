@@ -1,5 +1,11 @@
 const Sequelize = require('sequelize')
-const { Classes, Subjects, docAnswers } = require('../models')
+const {
+  Classes,
+  Subjects,
+  Documents,
+  docAnswers,
+  Problems,
+} = require('../models')
 const RequestError = require('../config/RequestError')
 const ServerError = require('../config/ServerError')
 
@@ -12,27 +18,21 @@ module.exports = {
         error.notExistOrDelete()
         throw error
       }
-
+      const addSubject = []
       const errors = []
       if (idsubjects.length) {
-        const addSubjects = []
-
         for (const element of idsubjects) {
           const subject = await Subjects.findByPk(element)
           if (!subject) {
             errors.push(element)
           } else {
-            addSubjects.push(subject)
+            addSubject.push(subject)
           }
         }
-        await classe.setSubjects(addSubjects)
-        // On renvoie le statut crée et la liste des erreurs rencontre (les matières ui n'existe pas)
-        return errors
+        await classe.setSubjects(addSubject)
       }
-
-      const error = new RequestError('Matières')
-      error.Empty()
-      throw error
+      // On renvoie le statut crée et la liste des erreurs rencontre (les matières ui n'existe pas)
+      return errors
     } catch (errors) {
       if (errors instanceof RequestError) {
         throw errors
@@ -49,8 +49,18 @@ module.exports = {
         throw error
       }
 
-      const subjectHasClasses = await classe.getSubjects()
-      const count = await classe.countSubjects()
+      const subjectHasClasses = await classe.getClassesSubjects({
+        attributes: {
+          include: [[Sequelize.fn('', Sequelize.col('Subject.name')), 'name']],
+        },
+        include: [
+          {
+            model: Subjects,
+            attributes: [],
+          },
+        ],
+      })
+      const count = subjectHasClasses.length
       return {
         count,
         subjectHasClasses,
@@ -72,8 +82,19 @@ module.exports = {
         throw error
       }
 
-      const subjectHasClasses = await subject.getClasses()
-      const count = await subject.countClasses()
+      const subjectHasClasses = await subject.getSubjectsHasClasses({
+        attributes: {
+          include: [[Sequelize.fn('', Sequelize.col('Class.name')), 'name']],
+          exclude: ['idsubjects', 'idsubjectshasclasses'],
+        },
+        include: [
+          {
+            model: Classes,
+            attributes: [],
+          },
+        ],
+      })
+      const count = subjectHasClasses.length
       return {
         count,
         subjectHasClasses,
@@ -88,29 +109,50 @@ module.exports = {
   // stat document et corrigé
   async showSubjectsInClasseNstat(idclasses) {
     try {
-      const subjectHasClasses = []
-
       const classe = await Classes.findByPk(idclasses)
       if (!classe) {
         const error = new RequestError('Classe')
         error.notExistOrDelete()
         throw error
       }
-      const subjectHsClasses = await classe.getSubjects()
-      await subjectHsClasses.forEach(async (subjectHasClasse) => {
-        const element = subjectHasClasse.toJSON()
-        // const documents = subjectHasClasse.subjectsHasClasses
-        subjectHasClasse.subjectsHasClasses
-          .getDocInSubjectClasses({
+      const subjectHsClasses = await classe.getClassesSubjects({
+        group: ['idsubjectshasclasses'],
+        attributes: {
+          include: [
+            [Sequelize.fn('', Sequelize.col('Subject.name')), 'name'],
+            [
+              Sequelize.fn(
+                'COUNT',
+                Sequelize.col('docInSubjectClasses.iddocuments')
+              ),
+              'countDocument',
+            ],
+          ],
+        },
+        include: [
+          {
+            model: Subjects,
+            attributes: [],
+          },
+          {
+            model: Documents,
+            as: 'docInSubjectClasses',
+            attributes: [],
+            // required: false,
+          },
+        ],
+      })
+
+      const subjectHasClasses = await subjectHsClasses.map(
+        async (subjectHasClasse) => {
+          const element = subjectHasClasse.toJSON()
+          // const documents = subjectHasClasse.subjectsHasClasses
+          const doc = await subjectHasClasse.getDocInSubjectClasses({
             attributes: [
               // on récupère le nombre de corrigé et de document
               [
                 Sequelize.fn('COUNT', Sequelize.col('docAnswer.iddocanswers')),
                 'docAnswersCount',
-              ],
-              [
-                Sequelize.fn('COUNT', Sequelize.col('Documents.iddocuments')),
-                'docCount',
               ],
             ],
             include: [
@@ -120,18 +162,75 @@ module.exports = {
               },
             ],
           })
-          .then((doc) => {
-            element.countAnswer = doc ? doc[0].toJSON().docAnswersCount : 0
-            element.countDocument = doc ? doc[0].toJSON().docCount : 0
+
+          element.countAnswer = doc ? doc[0].toJSON().docAnswersCount : 0
+
+          return element
+        }
+      )
+      return Promise.all(subjectHasClasses).then((rows) => {
+        return {
+          count: subjectHasClasses.length,
+          subjectHasClasses: rows,
+        }
+      })
+    } catch (errors) {
+      if (errors instanceof RequestError) {
+        throw errors
+      }
+      throw new ServerError(errors)
+    }
+  },
+  async showSubjectsInClasseNstatForum(idclasses) {
+    try {
+      const classe = await Classes.findByPk(idclasses)
+      if (!classe) {
+        const error = new RequestError('Classe')
+        error.notExistOrDelete()
+        throw error
+      }
+      const subjectHsClasses = await classe.getClassesSubjects({
+        group: ['idsubjectshasclasses'],
+        attributes: {
+          include: [
+            [Sequelize.fn('', Sequelize.col('Subject.name')), 'name'],
+            [
+              Sequelize.fn('COUNT', Sequelize.col('Problems.idproblems')),
+              'countProblem',
+            ],
+          ],
+        },
+        include: [
+          {
+            model: Subjects,
+            attributes: [],
+          },
+          {
+            model: Problems,
+            attributes: [],
+          },
+        ],
+      })
+      const subjectHasClasses = await subjectHsClasses.map(
+        async (subjectHasClasse) => {
+          const element = subjectHasClasse.toJSON()
+          // const documents = subjectHasClasse.subjectsHasClasses
+          const doc = await subjectHasClasse.getProblems({
+            attributes: [
+              [Sequelize.fn('COUNT', Sequelize.col('status')), 'count'],
+            ],
+            where: {
+              status: 1,
+            },
           })
 
-        subjectHasClasses.push(element)
+          element.countResponse = doc ? doc[0].toJSON().count : 0
+          return element
+        }
+      )
+      return Promise.all(subjectHasClasses).then((rows) => {
+        return { count: subjectHasClasses.length, subjectHasClasses: rows }
       })
-      const count = await classe.countSubjects()
-      return {
-        count,
-        subjectHasClasses,
-      }
     } catch (errors) {
       if (errors instanceof RequestError) {
         throw errors
@@ -148,20 +247,44 @@ module.exports = {
         throw error
       }
 
-      const subjectHasClasses = []
-      ;(await subject.getClasses()).forEach(async (subjectHasClasse) => {
-        const element = subjectHasClasse.toJSON()
-        subjectHasClasse.subjectsHasClasses
-          .getDocInSubjectClasses({
+      const subjectHsClasses = await subject.getSubjectsHasClasses({
+        group: ['idsubjectshasclasses'],
+        attributes: {
+          include: [
+            [Sequelize.fn('', Sequelize.col('Class.name')), 'name'],
+            [
+              Sequelize.fn(
+                'COUNT',
+                Sequelize.col('docInSubjectClasses.iddocuments')
+              ),
+              'countDocument',
+            ],
+          ],
+        },
+        include: [
+          {
+            model: Classes,
+            attributes: [],
+          },
+          {
+            model: Documents,
+            as: 'docInSubjectClasses',
+            attributes: [],
+            // required: false,
+          },
+        ],
+      })
+
+      const subjectHasClasses = await subjectHsClasses.map(
+        async (subjectHasClasse) => {
+          const element = subjectHasClasse.toJSON()
+          // const documents = subjectHasClasse.subjectsHasClasses
+          const doc = await subjectHasClasse.getDocInSubjectClasses({
             attributes: [
               // on récupère le nombre de corrigé et de document
               [
                 Sequelize.fn('COUNT', Sequelize.col('docAnswer.iddocanswers')),
                 'docAnswersCount',
-              ],
-              [
-                Sequelize.fn('COUNT', Sequelize.col('Documents.iddocuments')),
-                'docCount',
               ],
             ],
             include: [
@@ -171,17 +294,75 @@ module.exports = {
               },
             ],
           })
-          .then((doc) => {
-            element.countAnswer = doc ? doc[0].toJSON().docAnswersCount : 0
-            element.countDocument = doc ? doc[0].toJSON().docCount : 0
-          })
-        subjectHasClasses.push(element)
+
+          element.countAnswer = doc ? doc[0].toJSON().docAnswersCount : 0
+
+          return element
+        }
+      )
+      return Promise.all(subjectHasClasses).then((rows) => {
+        return {
+          count: subjectHasClasses.length,
+          subjectHasClasses: rows,
+        }
       })
-      const count = await subject.countClasses()
-      return {
-        count,
-        subjectHasClasses,
+    } catch (errors) {
+      if (errors instanceof RequestError) {
+        throw errors
       }
+      throw new ServerError(errors)
+    }
+  },
+  async showClassesHavSubjectNstatForum(idsubjects) {
+    try {
+      const subject = await Subjects.findByPk(idsubjects)
+      if (!subject) {
+        const error = new RequestError('Matière')
+        error.notExistOrDelete()
+        throw error
+      }
+      const subjectHsClasses = await subject.getSubjectsHasClasses({
+        group: ['idsubjectshasclasses'],
+        attributes: {
+          include: [
+            [Sequelize.fn('', Sequelize.col('Class.name')), 'name'],
+            [
+              Sequelize.fn('COUNT', Sequelize.col('Problems.idproblems')),
+              'countProblem',
+            ],
+          ],
+        },
+        include: [
+          {
+            model: Classes,
+            attributes: [],
+          },
+          {
+            model: Problems,
+            attributes: [],
+          },
+        ],
+      })
+      const subjectHasClasses = await subjectHsClasses.map(
+        async (subjectHasClasse) => {
+          const element = subjectHasClasse.toJSON()
+          // const documents = subjectHasClasse.subjectsHasClasses
+          const doc = await subjectHasClasse.getProblems({
+            attributes: [
+              [Sequelize.fn('COUNT', Sequelize.col('status')), 'count'],
+            ],
+            where: {
+              status: 1,
+            },
+          })
+
+          element.countResponse = doc ? doc[0].toJSON().count : 0
+          return element
+        }
+      )
+      return Promise.all(subjectHasClasses).then((rows) => {
+        return { count: subjectHasClasses.length, subjectHasClasses: rows }
+      })
     } catch (errors) {
       if (errors instanceof RequestError) {
         throw errors

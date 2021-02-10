@@ -1,4 +1,3 @@
-const AdminService = require('../services/AdminService')
 const StatService = require('../services/StatService')
 const ClasseSubjectService = require('../services/ClasseSubjectService')
 
@@ -13,7 +12,7 @@ module.exports = {
   },
   async showSubjectsInClasseNstat(req, res, next) {
     try {
-      const classeId = parseInt(req.params.idsubjects, 10)
+      const classeId = parseInt(req.params.idclasses, 10)
 
       const subjectHasClasses = await ClasseSubjectService.showSubjectsInClasseNstat(
         classeId
@@ -26,7 +25,7 @@ module.exports = {
   async showClassesHavSubjectNstat(req, res, next) {
     try {
       const subjectId = parseInt(req.params.idsubjects, 10)
-      const subjectHasClasses = await AdminService.showClassesHavSubjectNstat(
+      const subjectHasClasses = await ClasseSubjectService.showClassesHavSubjectNstat(
         subjectId
       )
       return res.status(200).send(subjectHasClasses)
@@ -34,11 +33,25 @@ module.exports = {
       return next(errors)
     }
   },
-  async delete(req, res, next) {
+  async showSubjectsInClasseNstatForum(req, res, next) {
     try {
-      const adminId = parseInt(req.params.id, 10)
-      await AdminService.delete(adminId)
-      return res.sendStatus(204)
+      const classeId = parseInt(req.params.idclasses, 10)
+
+      const subjectHasClasses = await ClasseSubjectService.showSubjectsInClasseNstatForum(
+        classeId
+      )
+      return res.status(200).send(subjectHasClasses)
+    } catch (errors) {
+      return next(errors)
+    }
+  },
+  async showClassesHavSubjectNstatForum(req, res, next) {
+    try {
+      const subjectId = parseInt(req.params.idsubjects, 10)
+      const subjectHasClasses = await ClasseSubjectService.showClassesHavSubjectNstatForum(
+        subjectId
+      )
+      return res.status(200).send(subjectHasClasses)
     } catch (errors) {
       return next(errors)
     }

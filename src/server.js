@@ -1,3 +1,4 @@
+/* eslint-disable global-require */
 const winston = require('./config/winston')
 require('custom-env').env('developpment')
 const db = require('./models')

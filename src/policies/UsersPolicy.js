@@ -2,7 +2,7 @@
 const Joi = require('joi')
 const ValidationError = require('../config/ValidationError')
 
-function checkError(error, res, next) {
+function checkError(error, next) {
   const errors = new ValidationError('Utilisateur')
   switch (error.details[0].context.key) {
     case 'fullname':
@@ -36,7 +36,7 @@ module.exports = {
     }
     const { error } = Joi.validate(req.body.user, schema)
     if (error) {
-      checkError(error, res, next)
+      checkError(error, next)
     } else {
       next()
     }
@@ -50,7 +50,7 @@ module.exports = {
     }
     const { error } = Joi.validate(req.body.user, schema)
     if (error) {
-      checkError(error, res, next)
+      checkError(error, next)
     } else {
       next()
     }

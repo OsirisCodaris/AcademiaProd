@@ -1,6 +1,7 @@
 node_modules
 .env.developpment
 public/documents/
+public/forum/
 tmp
 .htaccess
 logs
