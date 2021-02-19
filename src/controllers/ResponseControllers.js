@@ -1,4 +1,5 @@
 const ResponseService = require('../services/ResponseService')
+const { PushNotification } = require('../utils/NotificationSender')
 
 module.exports = {
   async create(req, res, next) {
@@ -12,6 +13,7 @@ module.exports = {
         content,
         file
       )
+      PushNotification(response)
       return res.status(201).send({
         idresponses: response.idresponses,
       })

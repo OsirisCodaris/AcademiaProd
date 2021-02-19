@@ -1,4 +1,6 @@
 const DocService = require('../services/DocService')
+const DocumentViewService = require('../services/DocumentViewService')
+
 const DocHasSubjectHasClass = require('../services/DocHasSubjectHasClass')
 
 module.exports = {
@@ -82,6 +84,16 @@ module.exports = {
         idsubjects
       )
       return res.status(200).send({ docInClasseSubject })
+    } catch (errors) {
+      return next(errors)
+    }
+  },
+  async viewDoc(req, res, next) {
+    try {
+      const { file } = req.params
+      const { user } = req
+      await DocumentViewService.viewDoc(file, user)
+      return next()
     } catch (errors) {
       return next(errors)
     }

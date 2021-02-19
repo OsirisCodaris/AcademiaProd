@@ -2,18 +2,19 @@ const nodemailer = require('nodemailer')
 
 exports.Mailer = (from, to, subject, message) => {
   const transporter = nodemailer.createTransport({
-    host: 'mocha3027.mochahost.com',
+    host: 'hybrid3015.fr.ns.planethoster.net',
     port: 465,
     secure: true,
     auth: {
       // should be replaced with real sender's account
       user: 'administrator@academiagabon.ga',
-      pass: '@dministr@t0r',
+      pass: '@c@d3m1@2020',
     },
   })
   const mailOptions = {
     from,
     to,
+
     subject,
     text: message,
   }

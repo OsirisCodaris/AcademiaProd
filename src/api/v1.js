@@ -18,6 +18,9 @@ const problem = require('./Forum/problem')
 const response = require('./Forum/response')
 const statForum = require('./Forum/stats')
 const readerfile = require('./Forum/readerfile')
+const notification = require('./Chat/notifications')
+
+const update = require('./update')
 
 module.exports = (app) => {
   app.use('/v1', authentification)
@@ -34,4 +37,6 @@ module.exports = (app) => {
   app.use('/v1', response)
   app.use('/v1', statForum)
   app.use('/v1', readerfile)
+  app.use('/v1', notification)
+  app.use('/v1', update)
 }

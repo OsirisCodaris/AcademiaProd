@@ -107,6 +107,35 @@ module.exports = {
       throw new ServerError(errors)
     }
   },
+  async showById(idresponses) {
+    try {
+      const response = await Responses.findOne({
+        where: {
+          idresponses,
+        },
+        attributes: {
+          include: [
+            [Sequelize.fn('', Sequelize.col('User.idusers')), 'idusers'],
+            [Sequelize.fn('', Sequelize.col('User.fullname')), 'fullname'],
+          ],
+        },
+        include: [
+          {
+            model: Users,
+            attributes: ['idusers'],
+          },
+        ],
+        order: [['createdAt', 'DESC']],
+      })
+
+      const el = response.toJSON()
+      el.role = await UserRole(response.User)
+
+      return el
+    } catch (errors) {
+      return new ServerError(errors)
+    }
+  },
   async showResponseInProblem(idproblems) {
     try {
       const responses = await Responses.findAndCountAll({

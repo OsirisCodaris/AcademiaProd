@@ -69,6 +69,9 @@ module.exports = (sequelize, DataTypes) => {
     Problem.hasMany(models.Responses, {
       foreignKey: 'idproblems',
     })
+    Problem.hasMany(models.Notifications, {
+      foreignKey: 'idproblems',
+    })
     Problem.belongsTo(models.Students, {
       foreignKey: 'idstudents',
     })

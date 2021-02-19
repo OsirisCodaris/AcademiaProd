@@ -26,11 +26,16 @@ module.exports = (sequelize, DataTypes) => {
           key: 'idusers',
         },
       },
+      countviews: {
+        type: DataTypes.INTEGER(11),
+        allowNull: false,
+        defaultValue: 0,
+      },
     },
     {
       sequelize,
       tableName: 'documents_views',
-      timestamps: false,
+      timestamps: true,
     }
   )
   return docView
